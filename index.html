@@ -790,6 +790,11 @@ button.danger{border-color:var(--loss);background:var(--loss);color:#fff}
 .lb div{display:flex;justify-content:space-between;gap:10px;padding:6px 9px;border-radius:8px;background:#10323a;font:600 12.5px var(--body);color:#cfe3e6}
 .lb b{color:#fff}
 .sv-toss.sv-ask{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:250;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;white-space:normal;flex-wrap:wrap;justify-content:center;text-align:center}
+.fl-dd{position:relative;display:block;min-width:0}
+.fl-dd>.sv-fl{position:absolute;left:10px;top:50%;width:21px;height:14px;margin:-7px 0 0;pointer-events:none;z-index:1}
+.fl-dd.on select{padding-left:38px}
+.fl-dd.nat-w{margin:2px 0 8px}.nat-w .nat-s{margin:0}
+.pk-sel-h b .sv-fl{width:20px;height:13px;vertical-align:0;margin-right:6px}
 
 html,body{background:#0a2a30}
 body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
@@ -803,9 +808,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-build{font:12px/1.4 var(--mono);color:#8fb8bd;text-align:center;margin:6px 8px 0}.sa-build b{color:#dfff4f}.sa-build button{font:600 12px var(--body);margin-left:6px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#cfe3e6;cursor:pointer}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body data-build="10"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
+<body data-build="11"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
 <p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p>
-<p class="sa-build">Build <b>10</b> · Oct 22, 2026, 4:28 PM CT<button type="button" id="sa-chk">Check for update</button></p></div>
+<p class="sa-build">Build <b>11</b> · Oct 22, 2026, 4:46 PM CT<button type="button" id="sa-chk">Check for update</button></p></div>
 <script>
 (function(){
   'use strict';
@@ -1208,7 +1213,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       const [a,b] = pts, m = [0,15,30,40];
       const tb = isTb();
       const pt = tb ? [String(a), String(b)] : a >= 3 && b >= 3 ? (a === b ? ['40','40'] : a > b ? ['AD','40'] : ['40','AD']) : [String(m[Math.min(a,3)]), String(m[Math.min(b,3)])];
-      const names = [flg('you') + meName().toUpperCase().slice(0, 12), flg(mode === 'practice' ? '' : pro()[0]) + opp().toUpperCase().slice(0, 12)];
+      const names = [meName().toUpperCase().slice(0, 12), opp().toUpperCase().slice(0, 12)];
       const nmH = [flagH('you') + esc(meName().toUpperCase().slice(0, 12)), (mode === 'practice' ? '' : flagH(pro()[0])) + esc(opp().toUpperCase().slice(0, 12))];
       rowEls.forEach((r, i) => {
         { const nEl = r.querySelector('.sv-nm'); if (nEl.innerHTML !== nmH[i]) nEl.innerHTML = nmH[i]; }
@@ -1709,7 +1714,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const isoFlag = c2 => c2 ? String.fromCodePoint(...[...c2].map(ch => 0x1F1E6 + ch.charCodeAt(0) - 65)) : '';
     const MYNATS = [['US', 'United States'], ['CA', 'Canada'], ['MX', 'Mexico'], ['BR', 'Brazil'], ['AR', 'Argentina'], ['CL', 'Chile'], ['CO', 'Colombia'], ['PE', 'Peru'], ['GB', 'Great Britain'], ['IE', 'Ireland'], ['FR', 'France'], ['ES', 'Spain'], ['PT', 'Portugal'], ['IT', 'Italy'], ['DE', 'Germany'], ['AT', 'Austria'], ['CH', 'Switzerland'], ['NL', 'Netherlands'], ['BE', 'Belgium'], ['DK', 'Denmark'], ['NO', 'Norway'], ['SE', 'Sweden'], ['FI', 'Finland'], ['PL', 'Poland'], ['CZ', 'Czechia'], ['SK', 'Slovakia'], ['HU', 'Hungary'], ['HR', 'Croatia'], ['RS', 'Serbia'], ['GR', 'Greece'], ['BG', 'Bulgaria'], ['RO', 'Romania'], ['UA', 'Ukraine'], ['RU', 'Russia'], ['KZ', 'Kazakhstan'], ['TR', 'Türkiye'], ['IL', 'Israel'], ['EG', 'Egypt'], ['MA', 'Morocco'], ['NG', 'Nigeria'], ['ZA', 'South Africa'], ['IN', 'India'], ['CN', 'China'], ['JP', 'Japan'], ['KR', 'South Korea'], ['TW', 'Taiwan'], ['HK', 'Hong Kong'], ['PH', 'Philippines'], ['TH', 'Thailand'], ['AU', 'Australia'], ['NZ', 'New Zealand']];
     const myNat = () => MYNATS.some(x => x[0] === save.nat) ? save.nat : 'US', myNatName = () => (MYNATS.find(x => x[0] === myNat()) || [0, 'United States'])[1];
-    const flg = id => { const f = id === 'you' ? isoFlag(myNat()) : flagOf(id); return f ? f + ' ' : ''; };
+    const flg = id => { const c = id === 'you' ? myNat() : NAT[id]; return c && FLAG_SVG(c) ? '\uE000' + c + '\uE001' : ''; };
+    const flagFix = h => typeof h === 'string' && h.indexOf('\uE000') >= 0 ? h.replace(/\uE000([A-Z]{2})\uE001 ?/g, (m, c) => FLAG_SVG(c)) : h;
+    const flagStrip = s2 => String(s2).replace(/\uE000[A-Z]{2}\uE001 ?/g, '');
     // ---- little drawn flags (SVG), so they show on every phone and computer, not just where flag emoji are supported ----
     const FLAG_SVG = (() => {
       const r = (x, y, w, h, c) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + c + '"/>';
@@ -2094,7 +2101,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     function stakes(c){ const b = c.earn || 0; if (b < 100) return []; const L = [.02, .1, .3].map(f => Math.max(100, Math.round(b*f/100)*100)); return L.filter((x, i) => L.indexOf(x) === i && x <= b); }
     function pickLife(c){ const ONCE = ['wax', 'farewell', 'reunion', 'cubsox', 'bobble', 'restaurant', 'tellall', 'firstword', 'parentshouse', 'inherit'], L = Object.keys(LIFE).map(k => [k, LIFE[k].w(c) || 0]).filter(x => x[1] > 0 && !(c.lifeUsed || []).includes(x[0]) && !(ONCE.includes(x[0]) && (c.once || {})[x[0]])), tot = L.reduce((a, x) => a + x[1], 0); if (!tot) return null;
       let r = Math.random()*tot; for (const [k, w] of L) { r -= w; if (r <= 0) { c.lifeUsed = (c.lifeUsed || []).concat(k).slice(-8); (c.once = c.once || {})[k] = 1; return {id: k}; } } return null; }
-    const lifeTxt = (c, s) => s.replace(/\{P\}/g, relOf(c).p || 'your partner').replace(/\{NATN\}/g, myNatName()).replace(/\{FLAG\}/g, flg('you').trim());
+    const lifeTxt = (c, s) => s.replace(/\{P\}/g, relOf(c).p || 'your partner').replace(/\{NATN\}/g, myNatName()).replace(/ ?\{FLAG\}/g, flg('you'));
     let lastBill = 0, lastPct = 0;
     const billOf = n => Math.round(n*[1, 1.6, 2.5, 4][homeTier()]/100)*100; // bills grow with your lifestyle
     function applyLife(c, e){
@@ -2327,86 +2334,39 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         h2: (c && c.h2h || {})[O] || [0, 0], st: PSTYLE[O] || 'all-court game', mySt: ({serve: 'Big serve', timing: 'Clean ball-striking', speed: 'Defense and speed', mental: 'Clutch on big points'})[best] || 'All-court game',
         rn: rnName(T, tourCtx.round), night: venue === 'night' || venue === 'indoor', acc: (curTheme() || {}).acc || '#2a8fe0', keys: boothKeys(O, T), rd: tourCtx.round};
     }
-    const BSLOW = 1.5; // the broadcast plays at a relaxed pace
     function startBooth(after){
-      const bd = boothData(), me1 = meName().split(' ')[0], h2 = bd.h2, sp = (who, s) => { if (cer && cer.kind === 'booth') cer.cap = {who, s, t0: (clock - cer.t0)/BSLOW}; };
-      const h2t = h2[0] + h2[1] ? (h2[0] > h2[1] ? meName() + ' leads their head-to-head ' + h2[0] + '–' + h2[1] : h2[1] > h2[0] ? bd.on + ' leads their head-to-head ' + h2[1] + '–' + h2[0] : 'Their head-to-head is all square at ' + h2[0] + '–' + h2[1]) : 'This is their first career meeting';
-      scene('booth', 15.4*BSLOW, after, [
-        {at: .4*BSLOW, fn: () => sp(0, (bd.night ? 'Good evening' : 'Good afternoon') + ' and welcome to ' + bd.T.city + ' for the ' + bd.rn.toLowerCase() + ' of ' + theN(bd.T.name) + '.')},
-        {at: 3.3*BSLOW, fn: () => sp(0, meName() + (bd.ms ? ', the No. ' + bd.ms + ' seed,' : bd.myR ? ', ranked No. ' + bd.myR + ' in the world,' : '') + ' takes on ' + bd.full + (bd.os ? ', seeded ' + bd.os : '') + '.')},
-        {at: 5.5*BSLOW, fn: () => sp(1, bd.rd > 0 ? me1 + ' has won ' + bd.rd + ' match' + (bd.rd > 1 ? 'es' : '') + ' this week and looks really sharp, Jim.' : 'A tough test right away. The first few games will tell us a lot.')},
-        {at: 7.7*BSLOW, fn: () => sp(0, h2t + '. Let’s look at the tale of the tape.')},
-        {at: 11.5*BSLOW, fn: () => sp(1, 'For me it comes down to this: ' + bd.keys[0].charAt(0).toLowerCase() + bd.keys[0].slice(1) + '.')},
-        {at: 14.0*BSLOW, fn: () => sp(0, 'The players are on their way out. Let’s go down to the court.')}
-      ], {bd});
+      const bd = boothData(), h2 = bd.h2, one = meName().split(' ')[0];
+      const h2t = h2[0] + h2[1] ? (h2[0] > h2[1] ? one + ' leads the head-to-head ' + h2[0] + '–' + h2[1] + '.' : h2[1] > h2[0] ? bd.on + ' leads the head-to-head ' + h2[1] + '–' + h2[0] + '.' : 'Their head-to-head is level at ' + h2[0] + '–' + h2[1] + '.') : 'This is their first meeting.';
+      const lines = [(bd.night ? 'Good evening' : 'Good afternoon') + ' from ' + bd.T.city + '. It’s the ' + bd.rn.toLowerCase() + ' of ' + theN(bd.T.name) + '.',
+        meName() + ' against ' + bd.full + '. ' + h2t,
+        'The key for ' + one + ': ' + bd.keys[0].charAt(0).toLowerCase() + bd.keys[0].slice(1) + '.'];
+      const sub = (seed, rk) => [seed ? 'No. ' + seed + ' seed' : '', rk ? 'World No. ' + rk : ''].filter(Boolean).join(' · ');
+      flagImg('you'); flagImg(bd.O); // start loading the flags
+      scene('booth', 10, after, [], {bd, lines, subs: [sub(bd.ms, bd.myR), sub(bd.os, bd.oRk)]});
     }
     function drawBooth(t){
-      t /= BSLOW; const bd = cer.bd; if (!bd) return; const acc = bd.acc, X = ctx;
-      const tx = (s, x, y, px, col, al, wt) => { X.fillStyle = col; X.font = (wt || 700) + ' ' + px + 'px Arial, sans-serif'; X.textAlign = al || 'left'; X.fillText(s, x, y); X.textAlign = 'start'; };
-      const spk = (t > 5.4 && t < 7.6) || (t > 11.4 && t < 14) ? 1 : 0, shot = t < 3 ? 0 : t < 7.2 ? 1 : t < 11.2 ? 2 : t < 14.6 ? 3 : 1;
-      const crowdDot = (i, a) => { const k = Math.sin(i*12.9898)*43758.5453, f = k - Math.floor(k); return ['#c9c9c9', '#a33b3b', '#2f4f7a', '#d8b84a', '#e8e8e8', '#3d6b45', '#7a2f3c', '#5a4a82'][Math.floor(f*8)] + (a || ''); };
-      const head = (x, y, k, talk) => { const q = PU*k; // headset with a boom mic, sized to the scaled sprite's head
-        X.strokeStyle = '#1a1a1a'; X.lineWidth = .4*q; X.beginPath(); X.arc(x, y + .2*q, 2.75*q, Math.PI*1.08, Math.PI*1.92); X.stroke();
-        X.fillStyle = '#202020'; X.fillRect(x + 2.3*q, y - .5*q, .9*q, 1.7*q); X.fillRect(x - 3.2*q, y - .5*q, .9*q, 1.7*q);
-        X.strokeStyle = '#333'; X.lineWidth = .22*q; X.beginPath(); X.moveTo(x + 2.8*q, y + 1.1*q); X.quadraticCurveTo(x + 2.9*q, y + 2.2*q, x + 1.1*q, y + 2.1*q); X.stroke();
-        X.fillStyle = talk ? '#ff3b3b' : '#4a4a4a'; X.beginPath(); X.arc(x + 1*q, y + 2.1*q, .32*q, 0, Math.PI*2); X.fill();
-        if (talk) { X.strokeStyle = 'rgba(255,255,255,.35)'; X.lineWidth = .15*q; for (let i = 1; i <= 2; i++) { X.beginPath(); X.arc(x + 1*q, y + 2.1*q, (.6 + i*.55 + (t*3 % 1)*.4)*q, -.6, .6); X.stroke(); } } };
-      const lower = (who, x0) => { const u = Math.min(1, (t - x0)/.35); if (u <= 0) return; const w0 = 92*u, y0 = 51.5; X.fillStyle = 'rgba(8,12,20,.92)'; X.fillRect(6, y0, w0, 10.5); X.fillStyle = acc; X.fillRect(6, y0, 2.2, 10.5); X.fillRect(6, y0 + 10.5, w0, .6);
-        if (u >= 1) { tx(BOOTH[who][0].toUpperCase(), 11, y0 + 5, 3.6, '#fff', 'left', 800); tx(BOOTH[who][1].toUpperCase() + ' · ' + bd.T.short.toUpperCase(), 11, y0 + 8.9, 2.3, '#9fb3c8', 'left', 600); } };
-      const bug = () => { X.fillStyle = 'rgba(8,12,20,.85)'; X.fillRect(3, 3, 44, 7); X.fillStyle = acc; X.fillRect(3, 3, 1.4, 7); tx(bd.T.short.toUpperCase(), 6.4, 8, 3, '#fff', 'left', 800); if (Math.sin(t*4) > -.3) { X.fillStyle = '#ff3b3b'; X.beginPath(); X.arc(W - 15, 6.4, 1.1, 0, Math.PI*2); X.fill(); } tx('LIVE', W - 4, 7.6, 3, '#fff', 'right', 800); };
-      if (shot === 0) { // wide establishing shot of the stadium
-        const gr = X.createLinearGradient(0, 0, 0, H); if (bd.night) { gr.addColorStop(0, '#040814'); gr.addColorStop(1, '#16223e'); } else { gr.addColorStop(0, '#5f9ad6'); gr.addColorStop(1, '#cfe6f5'); } X.fillStyle = gr; X.fillRect(0, 0, W, H);
-        if (bd.night) for (let i = 0; i < 40; i++) { X.fillStyle = 'rgba(255,255,255,' + (.3 + .3*Math.sin(t*2 + i)) + ')'; X.fillRect((i*37.3) % W, (i*11.7) % 22, .5, .5); }
-        const s = 1 + t*.05; X.save(); X.translate(W/2, 46); X.scale(s, s); X.translate(-W/2, -46);
-        X.fillStyle = '#1d222b'; X.beginPath(); X.ellipse(W/2, 48, W*.47, 25, 0, 0, Math.PI*2); X.fill();
-        for (let r = 0; r < 5; r++) { const rx = W*.45 - r*W*.045, ry = 23.5 - r*2.3; for (let i = 0; i < 160; i++) { const a = i/160*Math.PI*2, x = W/2 + Math.cos(a)*rx, y = 48 + Math.sin(a)*ry; X.fillStyle = crowdDot(i + r*200); X.fillRect(x - .45, y - .45, .9, .9); } }
-        X.fillStyle = '#20262f'; X.beginPath(); X.ellipse(W/2, 48, W*.24, 11.6, 0, 0, Math.PI*2); X.fill();
-        X.fillStyle = (SURF[surf] || {}).floor || '#2a6fc2'; X.beginPath(); X.moveTo(W/2 - 15, 41); X.lineTo(W/2 + 15, 41); X.lineTo(W/2 + 21, 55); X.lineTo(W/2 - 21, 55); X.fill();
-        X.strokeStyle = 'rgba(255,255,255,.85)'; X.lineWidth = .3; X.beginPath(); X.moveTo(W/2 - 15, 41); X.lineTo(W/2 + 15, 41); X.lineTo(W/2 + 21, 55); X.lineTo(W/2 - 21, 55); X.closePath(); X.moveTo(W/2 - 18, 48); X.lineTo(W/2 + 18, 48); X.moveTo(W/2, 43.5); X.lineTo(W/2, 52.5); X.stroke();
-        if (bd.night) [[.1, 30], [.9, 30], [.22, 22], [.78, 22]].forEach(([fx, y]) => { const g2 = X.createRadialGradient(W*fx, y, 0, W*fx, y, 9); g2.addColorStop(0, 'rgba(255,250,220,.9)'); g2.addColorStop(1, 'rgba(255,250,220,0)'); X.fillStyle = g2; X.fillRect(W*fx - 9, y - 9, 18, 18); });
-        X.restore(); bug(); tx(bd.rn.toUpperCase(), W/2, 14, 4.2, '#fff', 'center', 800); tx(bd.T.name.toUpperCase(), W/2, 19, 2.6, 'rgba(255,255,255,.75)', 'center', 600);
-      } else if (shot === 1) { // the commentary booth
-        X.fillStyle = '#0d1118'; X.fillRect(0, 0, W, H);
-        const wx = W*.06, ww = W*.88; X.fillStyle = bd.night ? '#0a1222' : '#6f9fc9'; X.fillRect(wx, 4, ww, 40);
-        for (let r = 0; r < 4; r++) for (let i = 0; i < 70; i++) { X.fillStyle = crowdDot(i*7 + r*91, ''); X.globalAlpha = .55; X.fillRect(wx + (i/70)*ww + (r % 2)*1.2, 16 + r*3.2, .9, .9); } X.globalAlpha = 1;
-        X.fillStyle = (SURF[surf] || {}).floor || '#2a6fc2'; X.globalAlpha = .8; X.fillRect(wx + ww*.2, 30, ww*.6, 9); X.globalAlpha = 1; X.fillStyle = 'rgba(255,255,255,.55)'; X.fillRect(wx + ww*.2, 34.4, ww*.6, .3); X.fillRect(wx + ww*.5, 30, .3, 9);
-        if (bd.night) for (let i = 0; i < 5; i++) { X.fillStyle = 'rgba(255,250,220,.35)'; X.beginPath(); X.arc(wx + ww*(.1 + i*.2), 7, 2.2, 0, Math.PI*2); X.fill(); }
-        X.fillStyle = 'rgba(255,255,255,.06)'; X.beginPath(); X.moveTo(wx + ww*.15, 4); X.lineTo(wx + ww*.3, 4); X.lineTo(wx + ww*.18, 44); X.lineTo(wx + ww*.03, 44); X.fill(); X.beginPath(); X.moveTo(wx + ww*.62, 4); X.lineTo(wx + ww*.7, 4); X.lineTo(wx + ww*.58, 44); X.lineTo(wx + ww*.5, 44); X.fill();
-        X.fillStyle = '#1c222c'; for (let i = 0; i <= 4; i++) X.fillRect(wx + ww*i/4 - .6, 4, 1.2, 40); X.fillRect(wx, 3, ww, 1.6); X.fillRect(wx, 43.4, ww, 1.6);
-        const pos = [W*.33, W*.67], k = 2.4, foot = 70;
-        pos.forEach((x, i) => { const talk = spk === i && Math.floor(t*5) % 3 !== 0, nod = talk ? Math.sin(t*7)*.25 : Math.sin(t*1.3 + i)*.15;
-          X.save(); X.translate(x, foot + nod); X.scale(k, k); const pal = i ? {T: '#3a4a6b', S: '#e0ac85', H: '#c9a15a', P: '#222', B: '#111'} : {T: '#2b2b33', S: '#a46a45', H: '#2a2a2a', P: '#222', B: '#111'};
-          const m = sprite('hold', 0, 0, pal); X.fillStyle = i ? '#dfe7f3' : '#e8e8e8'; X.fillRect(-1, m.top + 4*PU, 2, 1.2); X.restore();
-          head(x + 0, foot + nod + (m.top + 1.5*PU)*k, k, talk); });
-        X.fillStyle = '#2a2f38'; X.fillRect(0, 49, W, 3); X.fillStyle = '#171a20'; X.fillRect(0, 52, W, 22); X.fillStyle = acc; X.fillRect(0, 52, W, .8);
-        [W*.14, W*.86].forEach(x => { X.fillStyle = '#05070b'; X.fillRect(x - 9, 41, 18, 9); X.fillStyle = 'rgba(80,140,220,.35)'; X.fillRect(x - 8.4, 41.6, 16.8, 7.8); X.fillStyle = 'rgba(255,255,255,.5)'; X.fillRect(x - 6, 44 + Math.sin(t*2)*1, 6, .5); });
-        X.fillStyle = '#f2efe6'; X.fillRect(W*.42, 48.3, 7, 1); X.fillRect(W*.53, 48.5, 6, .9); X.fillStyle = '#c8d6e5'; X.fillRect(W*.29, 46, 1.6, 3); X.fillRect(W*.71, 46, 1.6, 3);
-        tx(bd.T.name.toUpperCase(), W/2, 62, 3, 'rgba(255,255,255,.18)', 'center', 800);
-        bug(); lower(spk, spk ? 5.5 : 3.3);
-      } else if (shot === 2) { // tale of the tape
-        const gr = X.createLinearGradient(0, 0, W, H); gr.addColorStop(0, '#0a1020'); gr.addColorStop(1, '#1a2438'); X.fillStyle = gr; X.fillRect(0, 0, W, H);
-        X.fillStyle = acc; X.globalAlpha = .12; for (let i = -3; i < 12; i++) { const x = i*26 + (t*12 % 26); X.beginPath(); X.moveTo(x, 0); X.lineTo(x + 10, 0); X.lineTo(x - 14, H); X.lineTo(x - 24, H); X.fill(); } X.globalAlpha = 1;
-        X.fillStyle = acc; X.fillRect(W/2 - 40, 3, 80, 7.4); tx('TALE OF THE TAPE', W/2, 8.4, 3.6, '#fff', 'center', 800); tx(bd.rn.toUpperCase() + ' · ' + bd.T.name.toUpperCase(), W/2, 14.2, 2.4, '#9fb3c8', 'center', 600);
-        const lt = t - 7.2, side = (x, nm2, col, fl, sub, dir) => { const u = Math.min(1, lt/.4), xx = x + (1 - u)*dir*40; X.fillStyle = col; X.beginPath(); X.arc(xx, 30, 8, 0, Math.PI*2); X.fill(); X.strokeStyle = acc; X.lineWidth = .7; X.stroke();
-          tx(initials2(nm2), xx, 31.6, 5, '#fff', 'center', 800); tx(nm2.toUpperCase(), xx, 44, 3.2, '#fff', 'center', 800); tx(sub, xx, 49, 2.4, '#9fb3c8', 'center', 600); const fim = flagImg(fl); if (fim) X.drawImage(fim, xx - 2.4, 50.6, 4.8, 3.2); };
-        side(W*.14, meName(), (pals().me || {}).T || '#2a6fc2', 'you', 'Age ' + (save.car ? ageOf(save.car) : 19), -1); side(W*.86, bd.full, PCOL[bd.O] || '#2d6a8f', bd.O, bd.st, 1);
-        const rows = [['WORLD RANKING', bd.myR ? 'No. ' + bd.myR : '—', bd.oRk ? 'No. ' + bd.oRk : '—'], ['SEED', bd.ms || '—', bd.os || '—'], ['SEASON W–L', bd.w + '–' + bd.l, '—'], ['TITLES THIS SEASON', bd.ti, bd.oT], ['HEAD-TO-HEAD', bd.h2[0], bd.h2[1]], ['STRENGTH', bd.mySt, bd.st.charAt(0).toUpperCase() + bd.st.slice(1)]];
-        rows.forEach((r, i) => { const u = Math.max(0, Math.min(1, (lt - .5 - i*.35)/.3)); if (!u) return; const y = 19.5 + i*7.2; X.globalAlpha = u; X.fillStyle = 'rgba(255,255,255,.06)'; X.fillRect(W*.27, y - 3.4, W*.46, 5.8);
-          tx(r[0], W/2, y - .9, 1.9, '#8fa8bd', 'center', 700); tx(String(r[1]), W*.29, y + 1.6, 3, '#fff', 'left', 800); tx(String(r[2]), W*.71, y + 1.6, 3, '#fff', 'right', 800); X.globalAlpha = 1; });
-      } else { // analyst close-up with the keys to the match
-        X.fillStyle = '#0d1118'; X.fillRect(0, 0, W, H); X.fillStyle = bd.night ? '#0e1830' : '#557ea8'; X.fillRect(0, 6, W*.5, 40); for (let i = 0; i < 80; i++) { X.fillStyle = crowdDot(i*5, ''); X.globalAlpha = .3; X.fillRect((i/80)*W*.5, 18 + (i % 4)*3, 1.4, 1.4); } X.globalAlpha = 1;
-        const k = 3.3, x = W*.24, foot = 80, talk = Math.floor(t*5) % 3 !== 0; X.save(); X.translate(x, foot + Math.sin(t*6)*.3); X.scale(k, k); const m = sprite('hold', 0, 0, {T: '#3a4a6b', S: '#e0ac85', H: '#c9a15a', P: '#222', B: '#111'}); X.restore();
-        head(x, foot + (m.top + 1.5*PU)*k, k, talk);
-        const px = W*.5, pw = W*.46; X.fillStyle = 'rgba(8,12,20,.92)'; X.fillRect(px, 6, pw, 50); X.fillStyle = acc; X.fillRect(px, 6, pw, 7); tx('KEYS TO THE MATCH', px + pw/2, 11.3, 3.4, '#fff', 'center', 800);
-        bd.keys.forEach((kk, i) => { const u = Math.max(0, Math.min(1, (t - 11.6 - i*.6)/.3)); if (!u) return; const y = 21 + i*12; X.globalAlpha = u; X.fillStyle = acc; X.beginPath(); X.arc(px + 5, y, 2.4, 0, Math.PI*2); X.fill(); tx(String(i + 1), px + 5, y + 1.1, 3, '#fff', 'center', 800);
-          const words = kk.split(' '); let line = '', ln = 0; words.forEach(wd => { const tst = line ? line + ' ' + wd : wd; if (tst.length > 30) { tx(line, px + 10, y - 1 + ln*3.6, 2.8, '#fff', 'left', 600); line = wd; ln++; } else line = tst; }); tx(line, px + 10, y - 1 + ln*3.6, 2.8, '#fff', 'left', 600); X.globalAlpha = 1; });
-        bug(); lower(1, 11.3);
-      }
-      [3, 7.2, 11.2, 14.6].forEach(tb => { const d = t - tb; if (d > -.25 && d < .25) { const u = (d + .25)/.5, x = -W*.6 + u*W*2.2; X.fillStyle = acc; X.beginPath(); X.moveTo(x, 0); X.lineTo(x + W*.5, 0); X.lineTo(x + W*.3, H); X.lineTo(x - W*.2, H); X.fill(); X.fillStyle = '#fff'; X.globalAlpha = .6; X.beginPath(); X.moveTo(x + W*.5, 0); X.lineTo(x + W*.54, 0); X.lineTo(x + W*.34, H); X.lineTo(x + W*.3, H); X.fill(); X.globalAlpha = 1; } });
-      const cp = cer.cap; if (cp && t - cp.t0 < 2.7 && t < 15) { const words = ('“' + cp.s + '”').split(' '), lines = []; let ln = ''; words.forEach(wd => { const tt = ln ? ln + ' ' + wd : wd; if (tt.length > 64) { lines.push(ln); ln = wd; } else ln = tt; }); lines.push(ln);
-        const lh = 3.7, y0 = H - 2.5 - lines.length*lh; X.fillStyle = 'rgba(0,0,0,.72)'; X.fillRect(W*.06, y0 - 2.9, W*.88, lines.length*lh + 2.6);
-        lines.forEach((l2, i) => tx((i === 0 ? BOOTH[cp.who][0].split(' ')[1].toUpperCase() + ':  ' : '') + l2, W/2, y0 + i*lh, 2.8, i === 0 ? '#fff' : '#fff', 'center', 600)); }
-      if (t > 15) { X.fillStyle = 'rgba(0,0,0,' + Math.min(1, (t - 15)/.4).toFixed(3) + ')'; X.fillRect(0, 0, W, H); }
+      const cr = cer, bd = cr.bd; if (!bd) return; const acc = bd.acc, X = ctx, ease = u => 1 - Math.pow(1 - Math.max(0, Math.min(1, u)), 3);
+      const tx = (s2, x, y, px, col, al, wt, maxW) => { X.font = (wt || 700) + ' ' + px + 'px Arial, sans-serif'; if (maxW) { const m = X.measureText(s2).width; if (m > maxW) X.font = (wt || 700) + ' ' + (px*maxW/m).toFixed(2) + 'px Arial, sans-serif'; } X.fillStyle = col; X.textAlign = al || 'left'; X.fillText(s2, x, y); X.textAlign = 'start'; };
+      const gr = X.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#0b1424'); gr.addColorStop(1, '#13233b'); X.fillStyle = gr; X.fillRect(0, 0, W, H);
+      { const g2 = X.createRadialGradient(W/2, 30, 2, W/2, 30, W*.5); g2.addColorStop(0, 'rgba(255,255,255,.07)'); g2.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = g2; X.fillRect(0, 0, W, H); } X.fillStyle = acc; X.fillRect(0, 0, W, .8);
+      // header: event and round
+      let u = ease(t/.5); X.globalAlpha = u;
+      tx(bd.T.name.toUpperCase(), W/2, 8.5, 2.8, '#9fb3c8', 'center', 700, W*.8);
+      tx(bd.rn.toUpperCase(), W/2, 16.5 - (1 - u)*3, 6.4, '#fff', 'center', 800, W*.8);
+      X.fillStyle = acc; X.fillRect(W/2 - 9*u, 19, 18*u, .7); X.globalAlpha = 1;
+      // the two players
+      const side = (x, id, name, sub2, dir, d0) => { const v = ease((t - d0)/.5); if (v <= 0) return; X.globalAlpha = v; const xx = x + (1 - v)*dir*14;
+        const fim = flagImg(id); if (fim && fim.complete) { X.fillStyle = 'rgba(0,0,0,.4)'; X.fillRect(xx - 9.7, 24.3, 19.4, 13); X.drawImage(fim, xx - 9, 25, 18, 11.6); }
+        tx(name.toUpperCase(), xx, 43.5, 4.6, '#fff', 'center', 800, W*.4); if (sub2) tx(sub2, xx, 48.3, 2.6, '#9fb3c8', 'center', 600, W*.4); X.globalAlpha = 1; };
+      side(W*.26, 'you', meName(), cr.subs[0], -1, .35); side(W*.74, bd.O, bd.full, cr.subs[1], 1, .5);
+      u = ease((t - .8)/.4); if (u > 0) { X.globalAlpha = u; tx('VS', W/2, 33, 4.6, acc, 'center', 800); X.globalAlpha = 1; }
+      // one commentator line at a time
+      const k = t < 3.2 ? 0 : t < 6.4 ? 1 : 2, t0 = [0, 3.2, 6.4][k], a = Math.min(ease((t - t0 - .15)/.35), 1);
+      if (t > .9 && a > 0) { const msg = '“' + cr.lines[k] + '”', mw = W*.84; X.font = '600 3.3px Arial, sans-serif'; const words = msg.split(' '), L = []; let ln = '';
+        words.forEach(wd => { const tt = ln ? ln + ' ' + wd : wd; if (X.measureText(tt).width > mw - 6 && ln) { L.push(ln); ln = wd; } else ln = tt; }); L.push(ln);
+        const lh = 4.4, bh = L.length*lh + 3.6, y0 = H - 3 - bh; X.globalAlpha = a; X.fillStyle = 'rgba(255,255,255,.07)'; X.fillRect((W - mw)/2, y0, mw, bh); X.fillStyle = acc; X.fillRect((W - mw)/2, y0, .8, bh);
+        L.forEach((l2, i2) => tx(l2, W/2, y0 + 4.6 + i2*lh, 3.3, '#e9f1f8', 'center', 600)); X.globalAlpha = 1; }
+      if (t > 9.5) { X.fillStyle = 'rgba(0,0,0,' + Math.min(1, (t - 9.5)/.5).toFixed(3) + ')'; X.fillRect(0, 0, W, H); }
     }
     // ---- life scenes ----
     function drawLife(cvs, sc, t){
@@ -5255,7 +5215,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (won && cur.round < R - 1) { if (cur.round < 0) cur.qd = 1; else if (cur.W) cur.W[cur.round][cur.b.indexOf('you') >> (cur.round + 1)] = 'you'; cur.round++; persist(); showAdvance(); return; }
       showTourResult(finishTournament(won ? 3 : cur.tid === 'fin' ? cur.round : lossRes(t, cur.round)));
     }
-    function careerOverlay(html){ if (pickOpen) { pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); } post = {car: true}; postOpen = true; stage.classList.add('posting'); postEl.className = 'sv-post show'; setBtn(''); postEl.innerHTML = html; const ovk = html.slice(0, 160); if (ovk !== lastOv) { lastOv = ovk; requestAnimationFrame(() => showTop(postEl)); } }
+    function careerOverlay(html){ if (pickOpen) { pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); } post = {car: true}; postOpen = true; stage.classList.add('posting'); postEl.className = 'sv-post show'; setBtn(''); postEl.innerHTML = html = flagFix(html); const ovk = html.slice(0, 160); if (ovk !== lastOv) { lastOv = ovk; requestAnimationFrame(() => showTop(postEl)); } }
     function oppCard(id){ const P = PROS.find(p => p[0] === id) || PROS[0]; return '<div class="nx"><span class="sv-av" style="background:' + PCOL[P[0]] + '">' + initials2(P[2]) + '</span><div><b>' + esc(P[2]) + '</b><p>' + esc(P[3]) + '</p></div></div>'; }
     function showAdvance(){
       const c = car_(), t = curT(c), r = c.cur.round, o = careerOpp(), ev = brPick(c), [ttl, txt, eff] = brText(ev, t, o), ch = brChoices(ev);
@@ -5517,7 +5477,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     // achievement toasts
     const toastEl = document.createElement('div'); toastEl.className = 'sv-toast'; toastEl.setAttribute('aria-live', 'polite'); stage.appendChild(toastEl);
     let toastQ = [], toastOn = false;
-    function toast(msg){ toastQ.push(msg); if (!toastOn) nextToast(); }
+    function toast(msg){ toastQ.push(flagStrip(msg)); if (!toastOn) nextToast(); }
     const toastBusy = () => !pickOpen && !!(shot || cer || endPending || changePending || review || signOpen || pressOpen);
     function nextToast(){ if (toastQ.length && toastBusy()) { toastOn = true; setTimeout(() => { toastOn = false; if (!toastOn) nextToast(); }, 600); return; } const m = toastQ.shift(); if (!m) { toastOn = false; return; } { const core = m.replace(/^[^A-Za-z0-9]+/, '').replace(/ \(.*\)$/, '').trim(); if (core && ((postOpen && postEl.textContent.includes(core)) || (pickOpen && pickEl.textContent.includes(core)))) { nextToast(); return; } } toastOn = true; toastEl.textContent = m; toastEl.classList.remove('show'); void toastEl.offsetWidth; toastEl.classList.add('show');
       setTimeout(() => { toastEl.classList.remove('show'); setTimeout(nextToast, 350); }, 2600); }
@@ -5569,7 +5529,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       const tg = (k, l, d) => '<div class="st-o"><div><b>' + l + '</b><i>' + d + '</i></div><button type="button" class="st-tg' + (setv(k) ? ' on' : '') + '" data-hx="set:' + k + '" role="switch" aria-checked="' + setv(k) + '" aria-label="' + l + '"><span></span></button></div>';
       careerOverlay(pmHeadX('⚙️ Settings', '')
         + '<div class="st-o"><div><b>Your name</b><i>Shown on the scoreboard, draws, standings, crowd signs and introductions</i></div></div><div class="nm-r"><input class="nm-i" type="text" maxlength="14" placeholder="You" aria-label="Your name" value="' + esc(save.name || '') + '"><button type="button" data-hx="name">Save</button></div>'
-        + '<div class="st-o"><div><b>Nationality</b><i>Your flag on the scoreboard, draws and rankings. Tournaments in your country get a home crowd.</i></div></div><select class="nat-s" aria-label="Nationality">' + MYNATS.map(([k2, l]) => '<option value="' + k2 + '"' + (myNat() === k2 ? ' selected' : '') + '>' + isoFlag(k2) + ' ' + esc(l) + '</option>').join('') + '</select>'
+        + '<div class="st-o"><div><b>Nationality</b><i>Your flag on the scoreboard, draws and rankings. Tournaments in your country get a home crowd.</i></div></div><span class="fl-dd on nat-w">' + FLAG_SVG(myNat()) + '<select class="nat-s" aria-label="Nationality">' + MYNATS.map(([k2, l]) => '<option value="' + k2 + '"' + (myNat() === k2 ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></span>'
         + tg('fast', 'Faster cutscenes', 'Scenes between points play about 70% faster')
         + tg('skip', 'Skip cutscenes you’ve seen', 'Travel, walk-outs, introductions, change of ends and handshakes play once, then get skipped')
         + tg('calm', 'Fewer effects', 'No confetti, fireworks, camera flashes or screen shake')
@@ -5577,7 +5537,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + '<p class="cd-h">Save & backup</p><p class="ms-s">Save files, save codes and auto-snapshots.</p><button type="button" class="pc-sec" data-hx="saves">\u{1F4BE} Open Save & backup</button>'
         + (msg ? '<p class="br-eff">' + esc(msg) + '</p>' : '') + '<button type="button" class="pc-go" data-ovx="1">Back</button>'); wireNat();
     }
-    function wireNat(){ const ns = postEl.querySelector('.nat-s'); if (ns) ns.onchange = () => { save.nat = ns.value; persist(); try { showScore(); } catch(_) {} toast(isoFlag(ns.value) + ' Nationality set to ' + myNatName()); }; }
+    function wireNat(){ const ns = postEl.querySelector('.nat-s'); if (ns) ns.onchange = () => { save.nat = ns.value; persist(); try { showScore(); } catch(_) {} const w2 = ns.parentNode, f2 = w2 && w2.querySelector('.sv-fl'); if (f2) f2.outerHTML = FLAG_SVG(myNat()); toast('Nationality set to ' + myNatName()); }; }
     function backupCode(){ try { return 'MWS1.' + btoa(unescape(encodeURIComponent(JSON.stringify(save)))); } catch(_) { return ''; } }
     function readCode(txt){ try { const t = (txt || '').trim().replace(/^MWS1\./, ''); const d = JSON.parse(decodeURIComponent(escape(atob(t)))); return d && typeof d === 'object' && !Array.isArray(d) ? d : null; } catch(_) { return null; } }
     // ---- saving: auto-snapshots on this device, cloud save on your Claude account, save files and codes ----
@@ -6416,7 +6376,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
           const items = [];
           if (bkNeeded(c)) items.push(['hx', 'saves', '\u{1F510}', 'Back up your progress', bkStale() ? 'It’s been a few days. Copy your save code' : 'New season! Copy your save code', 'msg']);
           if (L2) items.push(['cx', 'lifego', '\u{1F3AC}', lifeTitle(L2, c), 'Something’s happening this month', 'life']);
-          if (M2 && !c.msg.done) items.push(['car', 'msg', '\u{1F4F1}', 'New message', 'from ' + msgFrom(c, M2), 'msg']);
+          if (M2 && !c.msg.done) items.push(['car', 'msg', '\u{1F4F1}', 'New message', 'from ' + flagStrip(msgFrom(c, M2)), 'msg']);
           { const R = rivOf(c); if (R && R.st === 0) items.push(['cx', 'riv', '\u{1F624}', fullNm(R.id) + ' is talking about you', 'Meet your new rival', 'life']); }
           if (agentDue(c)) items.push(['cx', 'agent', '\u{1F4BC}', 'An agent wants to sign you', 'Bigger deals, for a 10% cut', 'msg']);
           { const sp = (c.pets || []).find(p => p.h < 40 && p.pl !== mo(c)); if (sp) items.push(['cx', 'hm:pets', (PET[sp.k] || PET.dog)[0], sp.n + ' misses you', 'Play or give a treat', 'life']); }
@@ -6782,8 +6742,8 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (!pk.cat) pk.cat = catOf(pk.opp);
       pickEl.innerHTML = tabs + (!save.tutDone && !save.tutSkip && !((save.xp || 0) >= 300) ? '<div class="tut-ban"><span>\u{1F44B}</span><div><b>New here?</b><i>Learn the controls in a 60-second practice.</i></div><button type="button" data-hx="tutorial">\u25B6 Start</button><button type="button" class="ghost" data-hx="tutskip" aria-label="Dismiss">\u2715</button></div>' : '') + (sn => sn ? '<p class="sn-b">' + sn.emoji + ' <b>' + esc(sn.name) + '</b> is on at McFetridge' + (owns(sn.item.split(':')[0], sn.item.split(':')[1]) ? '.' : '. Play any match to unlock the ' + esc(itemOf(sn.item)[1]) + '.') + '</p>' : '')(seasonNow()) + (() => { const P = PROS.find(p => p[0] === pk.opp) || PROS[0], h = (save.h2h || {})[P[0]], list = PROS.filter(p => catOf(p[0]) === pk.cat).sort(byName);
           return '<div class="pk-dd"><label><span>Player type</span><select data-pk-dd="cat">' + CATS.map(([k, l]) => '<option value="' + k + '"' + (pk.cat === k ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>'
-            + '<label><span>Opponent</span><select data-pk-dd="opp">' + list.map(p => '<option value="' + p[0] + '"' + (pk.opp === p[0] ? ' selected' : '') + '>' + (wackyLocked(p[0]) ? '\u{1F512} ' : flg(p[0])) + esc(p[2]) + '</option>').join('') + '</select></label></div>'
-            + '<div class="pk-sel"><span class="sv-av" style="background:' + PCOL[P[0]] + '">' + initials2(P[2]) + '</span><div><div class="pk-sel-h"><b>' + esc(P[2]) + '</b><i class="pk-str">' + strDots(P[0]) + '</i></div><p>' + (wackyLocked(P[0]) ? '<span class="pk-h2h">\u{1F512} Locked</span> · ' + esc(WACKY[P[0]].how) : (h ? '<span class="pk-h2h">You\'re ' + h[0] + '–' + h[1] + '</span> · ' : '') + '<span class="pk-sty">' + styleTag(P[0]).join(' ') + '</span> ' + flagH(P[0]) + esc(P[3]) + (catOf(P[0]) === 'retro' ? ' · Plays in black and white' : '')) + '</p></div></div>'; })()
+            + '<label><span>Opponent</span><span class="fl-dd' + (flagH(pk.opp) && !wackyLocked(pk.opp) ? ' on' : '') + '">' + (wackyLocked(pk.opp) ? '' : flagH(pk.opp)) + '<select data-pk-dd="opp">' + list.map(p => '<option value="' + p[0] + '"' + (pk.opp === p[0] ? ' selected' : '') + '>' + (wackyLocked(p[0]) ? '\u{1F512} ' : '') + esc(p[2]) + '</option>').join('') + '</select></span></label></div>'
+            + '<div class="pk-sel"><span class="sv-av" style="background:' + PCOL[P[0]] + '">' + initials2(P[2]) + '</span><div><div class="pk-sel-h"><b>' + (wackyLocked(P[0]) ? '' : flagH(P[0])) + esc(P[2]) + '</b><i class="pk-str">' + strDots(P[0]) + '</i></div><p>' + (wackyLocked(P[0]) ? '<span class="pk-h2h">\u{1F512} Locked</span> · ' + esc(WACKY[P[0]].how) : (h ? '<span class="pk-h2h">You\'re ' + h[0] + '–' + h[1] + '</span> · ' : '') + '<span class="pk-sty">' + styleTag(P[0]).join(' ') + '</span> ' + esc(P[3]) + (catOf(P[0]) === 'retro' ? ' · Plays in black and white' : '')) + '</p></div></div>'; })()
         + '<button type="button" class="pk-sum' + (pk.open ? ' on' : '') + '" data-pk-more="1"><span>\u2699\uFE0F Match settings</span><b>' + TIER[pk.lv] + ' · ' + SURF[pk.surf].name + ' · ' + VSHORT[pk.venue] + (mode === 'exhibition' && save.mfmt === 'mini' ? ' · Mini' : '') + '<i class="sw-dot" style="background:' + ((RCOL.find(r => r[0] === pk.rc) || [0, '#fff'])[1]) + '"></i></b><em>' + (pk.open ? '\u25B4' : '\u25BE') + '</em></button>'
         + (pk.open ? ''
         + '<div class="pk-opts"><span>Difficulty</span><div class="pk-seg">' + TIERS.map(v => `<button type="button" class="${pk.lv === v ? 'on' : ''}" data-pk-lv="${v}">${TIER[v]}</button>`).join('') + '</div>'
