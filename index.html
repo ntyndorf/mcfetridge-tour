@@ -371,6 +371,19 @@ button.cr-c{font:inherit;color:inherit;cursor:pointer;padding:4px 0;border:1px s
 .pc-hd>span:first-child{min-width:0}.pc-hd>span:nth-child(2){flex:none;max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#9fc3c8}
 .serve:has(.sv-stage.posting) .sv-chg,.serve:has(.sv-stage.posting) .sv-rst,.serve:has(.sv-stage.pressing) .sv-chg,.serve:has(.sv-stage.pressing) .sv-rst,.serve:has(.sv-sign.show) .sv-rst{display:none!important}
 .sv-panel>.pc-go{display:block;width:100%;margin-top:8px}
+.sv-fl{display:inline-block;width:15px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:5px;box-shadow:0 0 0 .6px rgba(255,255,255,.45);flex:none}.pk-sel .sv-fl{width:14px;height:9.5px;margin-right:4px;vertical-align:-.5px}
+.sv-stage .sv-call{top:44px;z-index:3;width:max-content;max-width:calc(100% - 22px);box-sizing:border-box;padding:5px 13px 6px;border-radius:10px;background:rgba(6,24,28,.86);border:1.5px solid rgba(255,255,255,.22);box-shadow:0 4px 14px rgba(0,0,0,.35);color:#fff;font:700 17px/1.18 var(--display);letter-spacing:.04em;text-align:center;white-space:normal;text-wrap:balance;text-shadow:none;transform:translateX(-50%) scale(.92)}
+.sv-stage .sv-call.show{transform:translateX(-50%) scale(1)}
+.sv-stage .sv-call.win,.sv-stage .sv-call.ace{color:#dfff4f;border-color:rgba(223,255,79,.6);font-size:17px;text-shadow:none}
+.sv-stage .sv-call.lose,.sv-stage .sv-call.fault{color:#ffc4ba;border-color:rgba(255,138,122,.55);font-size:17px;text-shadow:none}
+.sv-stage .sv-call.in{color:#fff}
+.sv-stage .sv-call.tip{width:max-content;font:600 14px/1.3 var(--body);letter-spacing:0}
+.sv-stage .sv-toast{top:auto;bottom:116px;border-radius:10px;padding:7px 13px;background:rgba(6,24,28,.94);border:1.5px solid rgba(223,255,79,.7);font:600 13px/1.3 var(--body)}.sv-stage.posting .sv-toast,.sv-stage.picking .sv-toast,.sv-stage.pressing .sv-toast{top:8px;bottom:auto}
+.sv-stage .sv-toss{border-radius:12px;background:rgba(6,24,28,.94);border:1.5px solid rgba(255,255,255,.18);box-shadow:0 4px 14px rgba(0,0,0,.35);font:600 13px var(--body)}
+.tut-b{background:#10323a;color:#e3f3f5;border:1.5px solid rgba(223,255,79,.7);border-radius:10px}.tut-b .tut-t{color:#dfff4f}.tut-a button{background:#dfff4f;color:#0b1f24}.tut-a button.ghost{background:transparent;color:#e3f3f5;border:1px solid rgba(255,255,255,.35)}
+.sv-post .life-cv ~ .ms-s,.sv-post .br-cv ~ .ms-s,.sv-post .ms-cv ~ .ms-s,.sv-post .lk-cap,.sv-post .au-ask,.sv-post .mg-p,.sv-press .pc-q{margin:0;padding:9px 12px;border-radius:10px;background:#10323a;border:1px solid rgba(255,255,255,.1);font:600 14px/1.38 var(--body);color:#fff;text-align:left}
+.sv-press .pc-q{font-size:15px}.sv-post .au-ask b,.sv-post .mg-p b{color:#9fd0d8}.sv-post .mg-h{margin:0;font:700 12.5px var(--body);color:#dfff4f;text-align:left}
+.sv-post .br-ch button,.sv-post .mg-3 button{background:#071c20;border:1px solid rgba(255,255,255,.28);border-radius:9px;padding:9px 10px;font:500 13.5px/1.25 var(--body);color:#fff}
 .sv-tip{background:#10323a;border-radius:10px;padding:8px 10px}
 .lv-m{display:inline-block;width:70px;height:6px;border-radius:3px;background:rgba(255,255,255,.15);vertical-align:middle;margin:0 4px;overflow:hidden}.lv-m span{display:block;height:100%;background:linear-gradient(90deg,#ff7ac6,#ff3b6b)}
 .hub button b{font:700 10.5px var(--body);background:#ff5a5f;color:#fff;border-radius:99px;padding:0 5px;min-width:16px;text-align:center}.hub button.glow{border-color:#dfff4f;box-shadow:0 0 8px rgba(223,255,79,.35)}
@@ -1106,8 +1119,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       const tb = isTb();
       const pt = tb ? [String(a), String(b)] : a >= 3 && b >= 3 ? (a === b ? ['40','40'] : a > b ? ['AD','40'] : ['40','AD']) : [String(m[Math.min(a,3)]), String(m[Math.min(b,3)])];
       const names = [flg('you') + meName().toUpperCase().slice(0, 12), flg(mode === 'practice' ? '' : pro()[0]) + opp().toUpperCase().slice(0, 12)];
+      const nmH = [flagH('you') + esc(meName().toUpperCase().slice(0, 12)), (mode === 'practice' ? '' : flagH(pro()[0])) + esc(opp().toUpperCase().slice(0, 12))];
       rowEls.forEach((r, i) => {
-        r.querySelector('.sv-nm').textContent = names[i];
+        { const nEl = r.querySelector('.sv-nm'); if (nEl.innerHTML !== nmH[i]) nEl.innerHTML = nmH[i]; }
         r.querySelector('.sv-g').textContent = (finalG || games)[i];
         { let sEl = r.querySelector('.sv-s'); if (!sEl) { try { sEl = document.createElement('span'); sEl.className = 'sv-s'; r.insertBefore(sEl, r.querySelector('.sv-g')); } catch(_) { sEl = null; } } if (sEl) sEl.textContent = matchMini ? sets[i] : ''; }
         r.querySelector('.sv-p').textContent = finalG ? '' : pt[i];
@@ -1615,6 +1629,45 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const MYNATS = [['US', 'United States'], ['CA', 'Canada'], ['MX', 'Mexico'], ['BR', 'Brazil'], ['AR', 'Argentina'], ['CL', 'Chile'], ['CO', 'Colombia'], ['PE', 'Peru'], ['GB', 'Great Britain'], ['IE', 'Ireland'], ['FR', 'France'], ['ES', 'Spain'], ['PT', 'Portugal'], ['IT', 'Italy'], ['DE', 'Germany'], ['AT', 'Austria'], ['CH', 'Switzerland'], ['NL', 'Netherlands'], ['BE', 'Belgium'], ['DK', 'Denmark'], ['NO', 'Norway'], ['SE', 'Sweden'], ['FI', 'Finland'], ['PL', 'Poland'], ['CZ', 'Czechia'], ['SK', 'Slovakia'], ['HU', 'Hungary'], ['HR', 'Croatia'], ['RS', 'Serbia'], ['GR', 'Greece'], ['BG', 'Bulgaria'], ['RO', 'Romania'], ['UA', 'Ukraine'], ['RU', 'Russia'], ['KZ', 'Kazakhstan'], ['TR', 'Türkiye'], ['IL', 'Israel'], ['EG', 'Egypt'], ['MA', 'Morocco'], ['NG', 'Nigeria'], ['ZA', 'South Africa'], ['IN', 'India'], ['CN', 'China'], ['JP', 'Japan'], ['KR', 'South Korea'], ['TW', 'Taiwan'], ['HK', 'Hong Kong'], ['PH', 'Philippines'], ['TH', 'Thailand'], ['AU', 'Australia'], ['NZ', 'New Zealand']];
     const myNat = () => MYNATS.some(x => x[0] === save.nat) ? save.nat : 'US', myNatName = () => (MYNATS.find(x => x[0] === myNat()) || [0, 'United States'])[1];
     const flg = id => { const f = id === 'you' ? isoFlag(myNat()) : flagOf(id); return f ? f + ' ' : ''; };
+    // ---- little drawn flags (SVG), so they show on every phone and computer, not just where flag emoji are supported ----
+    const FLAG_SVG = (() => {
+      const r = (x, y, w, h, c) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" fill="' + c + '"/>';
+      const h3 = (a, b, c) => r(0, 0, 30, 20, b) + r(0, 0, 30, 6.7, a) + r(0, 13.3, 30, 6.7, c), v3 = (a, b, c) => r(0, 0, 30, 20, b) + r(0, 0, 10, 20, a) + r(20, 0, 10, 20, c), h2 = (a, b) => r(0, 0, 30, 10, a) + r(0, 10, 30, 10, b);
+      const nc = (bg, cr, inner) => r(0, 0, 30, 20, bg) + r(8, 0, 6, 20, cr) + r(0, 7, 30, 6, cr) + (inner ? r(9.5, 0, 3, 20, inner) + r(0, 8.5, 30, 3, inner) : '');
+      const ci = (x, y, rr, c) => '<circle cx="' + x + '" cy="' + y + '" r="' + rr + '" fill="' + c + '"/>', pg = (p, c) => '<polygon points="' + p + '" fill="' + c + '"/>';
+      const st = (x, y, rr, c, sw) => { let p = ''; for (let i = 0; i < 10; i++) { const a = -Math.PI/2 + i*Math.PI/5, R2 = i % 2 ? rr*.42 : rr; p += (x + R2*Math.cos(a)).toFixed(2) + ',' + (y + R2*Math.sin(a)).toFixed(2) + ' '; } return sw ? '<polygon points="' + p + '" fill="none" stroke="' + c + '" stroke-width="' + sw + '"/>' : pg(p, c); };
+      const uj = (w, h) => r(0, 0, w, h, '#012169') + '<path d="M0,0L' + w + ',' + h + 'M' + w + ',0L0,' + h + '" stroke="#fff" stroke-width="' + (h*.2) + '"/><path d="M0,0L' + w + ',' + h + 'M' + w + ',0L0,' + h + '" stroke="#C8102E" stroke-width="' + (h*.07) + '"/><path d="M' + w/2 + ',0V' + h + 'M0,' + h/2 + 'H' + w + '" stroke="#fff" stroke-width="' + (h*.33) + '"/><path d="M' + w/2 + ',0V' + h + 'M0,' + h/2 + 'H' + w + '" stroke="#C8102E" stroke-width="' + (h*.2) + '"/>';
+      const usa = () => { let s = ''; for (let i = 0; i < 7; i++) s += r(0, i*20/7, 30, 20/7 + .05, i % 2 ? '#fff' : '#B22234'); s += r(0, 0, 13, 20*4/7, '#3C3B6E'); for (let y = 0; y < 3; y++) for (let x = 0; x < 4; x++) s += ci(2 + x*3 + (y % 2)*1.4, 2 + y*3.6, .55, '#fff'); return s; };
+      const D = {
+        US: usa, GB: () => uj(30, 20), CH: () => r(0, 0, 30, 20, '#DA291C') + r(12.5, 4, 5, 12, '#fff') + r(9, 7.5, 12, 5, '#fff'), JP: () => r(0, 0, 30, 20, '#fff') + ci(15, 10, 6, '#BC002D'),
+        CA: () => r(0, 0, 30, 20, '#fff') + r(0, 0, 7.5, 20, '#D80621') + r(22.5, 0, 7.5, 20, '#D80621') + st(15, 10.5, 5, '#D80621'),
+        AU: () => r(0, 0, 30, 20, '#012169') + uj(15, 10) + st(7.5, 15, 2.6, '#fff') + [[23, 4.5], [26.5, 9], [23, 16], [19.5, 10]].map(([x, y]) => st(x, y, 1.4, '#fff')).join(''),
+        NZ: () => r(0, 0, 30, 20, '#012169') + uj(15, 10) + [[23, 4.5], [26.5, 9], [23, 16], [19.5, 10]].map(([x, y]) => st(x, y, 1.6, '#fff') + st(x, y, 1.1, '#C8102E')).join(''),
+        BR: () => r(0, 0, 30, 20, '#009C3B') + pg('3,10 15,2 27,10 15,18', '#FFDF00') + ci(15, 10, 4.6, '#002776'), CN: () => r(0, 0, 30, 20, '#DE2910') + st(6, 6, 3.6, '#FFDE00') + [[11, 2.5], [13, 4.8], [13, 8], [11, 10]].map(([x, y]) => st(x, y, 1, '#FFDE00')).join(''),
+        HK: () => r(0, 0, 30, 20, '#DE2910') + st(15, 10, 5, '#fff'), KR: () => r(0, 0, 30, 20, '#fff') + '<path d="M10,10a5,5 0 0 1 10,0z" fill="#CD2E3A"/><path d="M10,10a5,5 0 0 0 10,0z" fill="#0047A0"/>' + [[4.5, 4], [25.5, 16], [25.5, 4], [4.5, 16]].map(([x, y]) => r(x - 2, y - 1.6, 4, 3.2, '#111')).join(''),
+        TW: () => r(0, 0, 30, 20, '#FE0000') + r(0, 0, 15, 10, '#000095') + ci(7.5, 5, 2.6, '#fff'), IL: () => r(0, 0, 30, 20, '#fff') + r(0, 2, 30, 3, '#0038B8') + r(0, 15, 30, 3, '#0038B8') + '<path d="M15,6.2L18.4,12.1H11.6zM15,13.8L11.6,7.9H18.4z" fill="none" stroke="#0038B8" stroke-width=".9"/>',
+        IN: () => h3('#FF9933', '#fff', '#138808') + '<circle cx="15" cy="10" r="2.2" fill="none" stroke="#000080" stroke-width=".8"/>', AR: () => h3('#74ACDF', '#fff', '#74ACDF') + ci(15, 10, 2, '#F6B40E'),
+        PE: () => v3('#D91023', '#fff', '#D91023'), PH: () => h2('#0038A8', '#CE1126') + pg('0,0 17,10 0,20', '#fff') + ci(5.2, 10, 1.7, '#FCD116'),
+        TN: () => r(0, 0, 30, 20, '#E70013') + ci(15, 10, 6, '#fff') + ci(15, 10, 4.4, '#E70013') + ci(16.3, 10, 3.6, '#fff') + st(16.6, 10, 2, '#E70013'),
+        TR: () => r(0, 0, 30, 20, '#E30A17') + ci(12, 10, 5, '#fff') + ci(13.3, 10, 4, '#E30A17') + st(18.6, 10, 2.5, '#fff'), MA: () => r(0, 0, 30, 20, '#C1272D') + st(15, 10.4, 5, '#006233', .9),
+        EG: () => h3('#CE1126', '#fff', '#000') + ci(15, 10, 1.8, '#C09300'), KZ: () => r(0, 0, 30, 20, '#00AFCA') + ci(15, 9, 3.4, '#FEC50C') + r(2, 2, 1.6, 16, '#FEC50C'),
+        GR: () => { let s = ''; for (let i = 0; i < 5; i++) s += r(0, i*4, 30, 4, i % 2 ? '#fff' : '#0D5EAF'); return s + r(0, 0, 12, 12, '#0D5EAF') + r(4.8, 0, 2.4, 12, '#fff') + r(0, 4.8, 12, 2.4, '#fff'); },
+        RS: () => h3('#C6363C', '#0C4076', '#fff') + r(8.5, 5.5, 4.5, 7, '#C6363C') + r(9.6, 6.8, 2.3, 4.4, '#fff'), HR: () => h3('#FF0000', '#fff', '#171796') + r(12.5, 5.5, 5, 6, '#fff') + r(12.5, 5.5, 2.5, 2, '#FF0000') + r(15, 7.5, 2.5, 2, '#FF0000') + r(12.5, 9.5, 2.5, 2, '#FF0000'),
+        SK: () => h3('#fff', '#0B4EA2', '#EE1C25') + r(7.5, 5, 6, 9, '#fff') + r(8.1, 5.6, 4.8, 7.8, '#EE1C25') + r(9.9, 6.2, 1.2, 5.4, '#fff') + r(8.7, 7.6, 3.6, 1, '#fff'),
+        BY: () => r(0, 0, 30, 13.3, '#C8313E') + r(0, 13.3, 30, 6.7, '#4AA657') + r(0, 0, 3.2, 20, '#fff') + [2, 6, 10, 14, 18].map(y => r(.8, y, 1.6, 1.6, '#C8313E')).join(''),
+        PT: () => r(0, 0, 30, 20, '#FF0000') + r(0, 0, 12, 20, '#006600') + ci(12, 10, 3.6, '#FFE000') + ci(12, 10, 2, '#FF0000'), MX: () => v3('#006847', '#fff', '#CE1126') + ci(15, 10, 2.1, '#8B5A2B'),
+        ZA: () => r(0, 0, 30, 10, '#E03C31') + r(0, 10, 30, 10, '#001489') + '<path d="M0,0L12,10L30,10M0,20L12,10" fill="none" stroke="#fff" stroke-width="6.5"/><path d="M0,0L12,10L30,10M0,20L12,10" fill="none" stroke="#007749" stroke-width="3.8"/>' + '<polygon points="0,3.2 8.2,10 0,16.8" fill="#000" stroke="#FFB81C" stroke-width="1"/>',
+        CL: () => h2('#fff', '#D52B1E') + r(0, 0, 10, 10, '#0039A6') + st(5, 5, 2.6, '#fff'), CO: () => r(0, 0, 30, 10, '#FCD116') + r(0, 10, 30, 5, '#003893') + r(0, 15, 30, 5, '#CE1126'),
+        TH: () => r(0, 0, 30, 20, '#A51931') + r(0, 3.3, 30, 13.4, '#F4F5F8') + r(0, 6.7, 30, 6.6, '#2D2A4A'), LV: () => r(0, 0, 30, 20, '#9E3039') + r(0, 8, 30, 4, '#fff'),
+        NG: () => v3('#008751', '#fff', '#008751'), IE: () => v3('#169B62', '#fff', '#FF883E'), BE: () => v3('#000', '#FDDA24', '#EF3340'), FR: () => v3('#0055A4', '#fff', '#EF4135'), IT: () => v3('#009246', '#fff', '#CE2B37'), RO: () => v3('#002B7F', '#FCD116', '#CE1126'),
+        DE: () => h3('#000', '#DD0000', '#FFCE00'), RU: () => h3('#fff', '#0039A6', '#D52B1E'), AT: () => h3('#ED2939', '#fff', '#ED2939'), NL: () => h3('#AE1C28', '#fff', '#21468B'), HU: () => h3('#CD2A3E', '#fff', '#436F4D'), BG: () => h3('#fff', '#00966E', '#D62612'),
+        UA: () => h2('#0057B7', '#FFD700'), PL: () => h2('#fff', '#DC143C'), CZ: () => h2('#fff', '#D7141A') + pg('0,0 15,10 0,20', '#11457E'), ES: () => r(0, 0, 30, 20, '#AA151B') + r(0, 5, 30, 10, '#F1BF00'),
+        DK: () => nc('#C8102E', '#fff'), NO: () => nc('#BA0C2F', '#fff', '#00205B'), SE: () => nc('#006AA7', '#FECC00'), FI: () => nc('#fff', '#002F6C')
+      };
+      const cache = {};
+      return code => { if (!code || !D[code]) return ''; return cache[code] || (cache[code] = '<svg class="sv-fl" viewBox="0 0 30 20" aria-hidden="true" preserveAspectRatio="none">' + D[code]() + '</svg>'); };
+    })();
+    const flagH = id => FLAG_SVG(id === 'you' ? myNat() : NAT[id]);
     const smashy = () => mode !== 'practice' && ['bublik', 'moutet'].includes(pro()[0]);
     const legendOpp = () => mode !== 'practice' && ['legend', 'retro'].includes(catOf(pro()[0]));
     const XCAT = k => ['retro', 'wacky'].includes(catOf(k)); // never on the Career tour or in the Gauntlet
@@ -5956,7 +6009,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       pickEl.innerHTML = tabs + (!save.tutDone && !save.tutSkip && !((save.xp || 0) >= 300) ? '<div class="tut-ban"><span>\u{1F44B}</span><div><b>New here?</b><i>Learn the controls in a 60-second practice.</i></div><button type="button" data-hx="tutorial">\u25B6 Start</button><button type="button" class="ghost" data-hx="tutskip" aria-label="Dismiss">\u2715</button></div>' : '') + (sn => sn ? '<p class="sn-b">' + sn.emoji + ' <b>' + esc(sn.name) + '</b> is on at McFetridge' + (owns(sn.item.split(':')[0], sn.item.split(':')[1]) ? '.' : '. Play any match to unlock the ' + esc(itemOf(sn.item)[1]) + '.') + '</p>' : '')(seasonNow()) + (() => { const P = PROS.find(p => p[0] === pk.opp) || PROS[0], h = (save.h2h || {})[P[0]], list = PROS.filter(p => catOf(p[0]) === pk.cat).sort(byName);
           return '<div class="pk-dd"><label><span>Player type</span><select data-pk-dd="cat">' + CATS.map(([k, l]) => '<option value="' + k + '"' + (pk.cat === k ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></label>'
             + '<label><span>Opponent</span><select data-pk-dd="opp">' + list.map(p => '<option value="' + p[0] + '"' + (pk.opp === p[0] ? ' selected' : '') + '>' + (wackyLocked(p[0]) ? '\u{1F512} ' : flg(p[0])) + esc(p[2]) + '</option>').join('') + '</select></label></div>'
-            + '<div class="pk-sel"><span class="sv-av" style="background:' + PCOL[P[0]] + '">' + initials2(P[2]) + '</span><div><div class="pk-sel-h"><b>' + esc(P[2]) + '</b><i class="pk-str">' + strDots(P[0]) + '</i></div><p>' + (wackyLocked(P[0]) ? '<span class="pk-h2h">\u{1F512} Locked</span> · ' + esc(WACKY[P[0]].how) : (h ? '<span class="pk-h2h">You\'re ' + h[0] + '–' + h[1] + '</span> · ' : '') + (flagOf(P[0]) ? flagOf(P[0]) + ' ' : '') + esc(P[3]) + (catOf(P[0]) === 'retro' ? ' · Plays in black and white' : '')) + '</p></div></div>'; })()
+            + '<div class="pk-sel"><span class="sv-av" style="background:' + PCOL[P[0]] + '">' + initials2(P[2]) + '</span><div><div class="pk-sel-h"><b>' + esc(P[2]) + '</b><i class="pk-str">' + strDots(P[0]) + '</i></div><p>' + (wackyLocked(P[0]) ? '<span class="pk-h2h">\u{1F512} Locked</span> · ' + esc(WACKY[P[0]].how) : (h ? '<span class="pk-h2h">You\'re ' + h[0] + '–' + h[1] + '</span> · ' : '') + flagH(P[0]) + esc(P[3]) + (catOf(P[0]) === 'retro' ? ' · Plays in black and white' : '')) + '</p></div></div>'; })()
         + '<button type="button" class="pk-sum' + (pk.open ? ' on' : '') + '" data-pk-more="1"><span>\u2699\uFE0F Match settings</span><b>' + TIER[pk.lv] + ' · ' + SURF[pk.surf].name + ' · ' + VSHORT[pk.venue] + (mode === 'exhibition' && save.mfmt === 'mini' ? ' · Mini' : '') + '<i class="sw-dot" style="background:' + ((RCOL.find(r => r[0] === pk.rc) || [0, '#fff'])[1]) + '"></i></b><em>' + (pk.open ? '\u25B4' : '\u25BE') + '</em></button>'
         + (pk.open ? ''
         + '<div class="pk-opts"><span>Difficulty</span><div class="pk-seg">' + TIERS.map(v => `<button type="button" class="${pk.lv === v ? 'on' : ''}" data-pk-lv="${v}">${TIER[v]}</button>`).join('') + '</div>'
