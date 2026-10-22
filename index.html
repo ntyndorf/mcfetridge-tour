@@ -802,7 +802,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-board .sv-foot .sv-hide{display:none!important}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://claude.ai/artifact/XoPG8FBeNbT8iWNH55RKoQ" target="_blank" rel="noopener">League ›</a></div><div id="serve-slot"></div></header>
+<body><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="./league/">League ›</a></div><div id="serve-slot"></div></header>
 <p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p></div>
 <script>
 (function(){
@@ -5668,6 +5668,8 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const fbDb = uid => ({doc: path => { const ref = FB.F.doc(FB.fs, 'saves', uid, 'parts', path.split('/').pop());
       return {get: async () => { const d = await FB.F.getDoc(ref); return {exists: d.exists(), data: () => d.data()}; }, set: o => FB.F.setDoc(ref, o)}; }});
     async function fbInit(){ if (!(await fbLoad())) return; const A = FB.A; FB.on = true;
+      try { const d = await FB.F.getDoc(FB.F.doc(FB.fs, 'league', 'state')); const L = d.exists() ? JSON.parse((d.data() || {}).json || '{}') : null; // league-mates who opted in to the Cup (initials only in the game)
+        if (L && Array.isArray(L.players) && typeof state !== 'undefined' && state && Array.isArray(state.players) && !state.players.length) state.players.push(...L.players.filter(p => p.cup).map(p => ({id: p.id, name: p.name, level: p.level, cup: 1}))); } catch(_) {}
       try { if (A.isSignInWithEmailLink(FB.auth, location.href)) { let em = ''; try { em = localStorage.getItem('mws-fb-email') || ''; } catch(_) {} if (!em) em = (window.prompt('Confirm your email to finish signing in') || '').trim();
           if (em) { await A.signInWithEmailLink(FB.auth, em, location.href); try { localStorage.removeItem('mws-fb-email'); } catch(_) {} setTimeout(() => toast('✅ Signed in. Your progress now backs up to your account.'), 1500); }
           try { history.replaceState(null, '', location.pathname + (location.hash || '')); } catch(_) {} } } catch(_) { FB.err = 'That sign-in link didn’t work. Send yourself a new one.'; }
