@@ -789,6 +789,7 @@ button.danger{border-color:var(--loss);background:var(--loss);color:#fff}
 .lb{display:grid;gap:4px}
 .lb div{display:flex;justify-content:space-between;gap:10px;padding:6px 9px;border-radius:8px;background:#10323a;font:600 12.5px var(--body);color:#cfe3e6}
 .lb b{color:#fff}
+.sv-toss.sv-ask{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:250;width:max-content;max-width:calc(100vw - 24px);box-sizing:border-box;white-space:normal;flex-wrap:wrap;justify-content:center;text-align:center}
 
 html,body{background:#0a2a30}
 body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
@@ -5624,7 +5625,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       } catch(e) {
         BK.busy = false; BK.dirty = true; const code = e && e.code;
         BK.st = code === 'revoked' || code === 'not_granted' || code === 'capability_disabled' || code === 'capability_removed' ? 'off' : 'err';
-        BK.err = code === 'quota_exceeded' ? 'Cloud storage is full.' : code === 'invalid_argument' ? 'Your account can’t save to the cloud on this page.' : 'Couldn’t reach the cloud. It’ll try again.';
+        BK.err = code === 'permission-denied' ? 'Your account isn’t allowed to save yet. It’ll try again.' : code === 'resource-exhausted' || code === 'quota_exceeded' ? 'Cloud storage is full.' : code === 'invalid_argument' ? 'Your account can’t save to the cloud on this page.' : 'Couldn’t reach the cloud. It’ll try again.';
         if (BK.st === 'off' || code === 'invalid_argument') BK.cloud = null; else { clearTimeout(BK.timer); BK.timer = setTimeout(() => cloudPut(), 60000); }
         refreshSaves(); return false;
       }
@@ -5638,11 +5639,16 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         if (!window.claude || !window.claude.use) return;
         const u = await window.claude.use('user'); if (!u) return; let w = false; try { w = !!((await u.isOwner()) || (await u.canEdit())); } catch(_) {} if (!w) return; // only you and your editors use cloud save; nobody else is asked for anything
         const db = await window.claude.use('db'); if (!db) return;
-        const id = await u.id(); if (!id) return; BK.cloud = db; BK.uid = id; BK.st = 'ok';
+        const id = await u.id(); if (!id) return; await cloudStart(db, id);
+      } catch(_) {}
+    }
+    const progOf = d => !d ? 0 : (d.xp || 0) + (d.played || 0)*5 + (d.car ? (d.car.season || 1)*2000 + (d.car.idx || 0)*100 + (d.car.hist || []).length : 0);
+    async function cloudStart(db, id){ // compare this device with the cloud copy; never let older or smaller progress overwrite newer
+      try { BK.cloud = db; BK.uid = id; BK.st = 'ok'; BK.ready = false; BK.pend = null;
         let got = null; try { got = await cloudGet(); } catch(_) { got = null; }
         if (got) { BK.slot = got.M.slot; BK.at = got.M.at; BK.cloudTs = got.M.ts; }
         const localTs = save.savedAt || 0;
-        if (got && got.M.ts > localTs + 5000 && JSON.stringify(got.d) !== JSON.stringify(save)) {
+        if (got && (got.M.ts > localTs + 5000 || progOf(got.d) > progOf(save)) && JSON.stringify(got.d) !== JSON.stringify(save)) {
           BK.pend = got; refreshSaves();
           ask('☁️ Your cloud save (' + esc(got.M.sum || saveSum(got.d)) + ', ' + whenTxt(got.M.at) + ') is newer than this device. Load it?', () => { BK.pend = null; adopt(got.d, 'loading cloud save'); });
           return; // uploads wait until you choose in the Save panel or load it
@@ -5651,6 +5657,39 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         refreshSaves();
       } catch(_) {}
     }
+    // ---- sign in with Google or an emailed link (Firebase), so progress follows you to any device ----
+    const FB_CFG = {apiKey: 'AIzaSyCda6JWumkoQ-ACOwf7407WiDl68pOZ9n0', authDomain: 'mcfetridge-tour.firebaseapp.com', projectId: 'mcfetridge-tour', storageBucket: 'mcfetridge-tour.firebasestorage.app', messagingSenderId: '128236415009', appId: '1:128236415009:web:73af7ac7511675e18bdb60'};
+    const FBU = m => 'https://www.gstatic.com/firebasejs/10.14.1/firebase-' + m + '.js';
+    var FB = {user: null, A: null, F: null, auth: null, fs: null, err: '', on: false};
+    const fbHere = () => /^https?:$/.test(location.protocol) && !(window.claude && window.claude.use);
+    async function fbLoad(){ if (FB.auth) return true; if (!fbHere()) return false;
+      try { const [app, A, F] = await Promise.all([import(FBU('app')), import(FBU('auth')), import(FBU('firestore'))]); const a = app.initializeApp(FB_CFG); FB.A = A; FB.F = F; FB.auth = A.getAuth(a); FB.fs = F.getFirestore(a); return true; }
+      catch(_) { FB.err = 'Sign-in couldn’t load. Check your connection and try again.'; return false; } }
+    const fbDb = uid => ({doc: path => { const ref = FB.F.doc(FB.fs, 'saves', uid, 'parts', path.split('/').pop());
+      return {get: async () => { const d = await FB.F.getDoc(ref); return {exists: d.exists(), data: () => d.data()}; }, set: o => FB.F.setDoc(ref, o)}; }});
+    async function fbInit(){ if (!(await fbLoad())) return; const A = FB.A; FB.on = true;
+      try { if (A.isSignInWithEmailLink(FB.auth, location.href)) { let em = ''; try { em = localStorage.getItem('mws-fb-email') || ''; } catch(_) {} if (!em) em = (window.prompt('Confirm your email to finish signing in') || '').trim();
+          if (em) { await A.signInWithEmailLink(FB.auth, em, location.href); try { localStorage.removeItem('mws-fb-email'); } catch(_) {} setTimeout(() => toast('✅ Signed in. Your progress now backs up to your account.'), 1500); }
+          try { history.replaceState(null, '', location.pathname + (location.hash || '')); } catch(_) {} } } catch(_) { FB.err = 'That sign-in link didn’t work. Send yourself a new one.'; }
+      try { await A.getRedirectResult(FB.auth); } catch(_) {}
+      A.onAuthStateChanged(FB.auth, u => { FB.user = u || null;
+        if (u) { if (!(BK.cloud && BK.uid === u.uid)) cloudStart(fbDb(u.uid), u.uid); }
+        else if (BK.uid) { clearTimeout(BK.timer); BK.cloud = null; BK.uid = null; BK.ready = false; BK.pend = null; BK.st = 'off'; }
+        refreshSaves(); }); }
+    async function fbAct(a){ if (!(await fbLoad())) { showSaves(FB.err || 'Sign-in works on the game’s own site.'); return; } const A = FB.A;
+      if (a === 'fb-google') { const P = new A.GoogleAuthProvider();
+        try { await A.signInWithPopup(FB.auth, P); showSaves('Signed in. Your progress now backs up to your account.'); }
+        catch(e) { const c = e && e.code || ''; if (/popup-blocked|operation-not-supported|web-storage-unsupported/.test(c)) { try { await A.signInWithRedirect(FB.auth, P); } catch(_) { showSaves('Google sign-in didn’t work here. Try the email link.'); } }
+          else showSaves(/popup-closed|cancelled-popup/.test(c) ? 'Sign-in cancelled.' : 'Google sign-in didn’t work. Try the email link instead.'); } return; }
+      if (a === 'fb-email') { const inp = postEl.querySelector('.fb-em'), em = ((inp && inp.value) || '').trim(); if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { showSaves('Type your email address first.'); return; }
+        try { await A.sendSignInLinkToEmail(FB.auth, em, {url: location.origin + location.pathname, handleCodeInApp: true}); try { localStorage.setItem('mws-fb-email', em); } catch(_) {} showSaves('Sent! Open the link in ' + em + ' on this phone or computer to finish signing in. Check spam if it’s not there.'); }
+        catch(_) { showSaves('Couldn’t send the link. Check the address and try again.'); } return; }
+      if (a === 'fb-out') ask('Sign out? Your progress stays on this device.', async () => { try { await A.signOut(FB.auth); } catch(_) {} showSaves('Signed out. This device keeps playing as normal.'); });
+    }
+    function acctHtml(){ if (!fbHere()) return ''; const u = FB.user;
+      return '<p class="cd-h">\u{1F464} Account</p>' + (u ? '<p class="ms-s">Signed in as <b>' + esc(u.email || u.displayName || 'you') + '</b>. Your progress backs up to your account automatically and follows you to any device you sign in on.</p><button type="button" class="pc-sec" data-hx="fb-out">Sign out</button>'
+        : '<p class="ms-s">Sign in to back up your progress to your account and pick it up on any device. Nobody else sees your email.</p><button type="button" class="pc-go" data-hx="fb-google">Sign in with Google</button>'
+          + '<div class="nm-r"><input class="nm-i fb-em" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" aria-label="Your email"><button type="button" data-hx="fb-email">Email me a link</button></div>'); }
     // on open: if this device's main save is missing or older than the backup copy, bring the backup back
     (async () => { try {
       if (!MIR.ok) return; const raw = await MIR.get('save'); let m = null; try { m = raw ? JSON.parse(raw) : null; } catch(_) {}
@@ -5666,7 +5705,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     { let asked = false; const askKeep = () => { if (asked) return; asked = true; try { if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => p || navigator.storage.persist()).catch(() => {}); } catch(_) {} };
       try { document.addEventListener('pointerdown', askKeep, {once: true, capture: true}); } catch(_) {} }
     try { document.addEventListener('visibilitychange', () => { if (document.hidden) MIR.flush(); }); window.addEventListener('pagehide', () => MIR.flush()); } catch(_) {}
-    setTimeout(() => { snapNow('Opened the game'); cloudInit(); }, 1200);
+    setTimeout(() => { snapNow('Opened the game'); cloudInit(); fbInit(); }, 1200);
     try { document.addEventListener('visibilitychange', () => { if (document.hidden && BK.dirty && BK.cloud && BK.ready && !BK.pend) { clearTimeout(BK.timer); cloudPut(); } }); } catch(_) {}
     function fileBlob(){ return JSON.stringify({game: 'mcfetridge-winter-singles', v: 1, savedAt: Date.now(), sum: saveSum(save), save}); }
     function fileName(){ const d = new Date(), p = n => String(n).padStart(2, '0'); return 'mws-tennis-save-' + d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + '.json'; }
@@ -5692,13 +5731,13 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       savesOpen = true;
       const cl = BK.cloud ? (BK.pend ? '<b class="sv-w">Newer save found in the cloud</b> (' + esc(BK.pend.M.sum || '') + ', ' + whenTxt(BK.pend.M.at) + '). Load it, or keep this device’s progress and overwrite the cloud copy.'
           : BK.st === 'saving' ? 'Saving to the cloud…' : BK.st === 'err' ? '<b class="sv-w">' + esc(BK.err) + '</b>' : BK.at ? '✅ Saved to the cloud ' + whenTxt(BK.at) + '. Saves automatically as you play.' : 'Connected. Your first cloud save happens after you play.')
-        : 'Cloud save is for the site owner. Use a save file or save code below to keep your progress safe.';
+        : 'Sign in above to back up to your account, or use a save file or save code below.';
       const snaps = snapList().map((s2, i) => { let d = null; try { d = JSON.parse(s2.d); } catch(_) {} return d ? '<div class="sv-sn"><span><b>' + whenTxt(s2.t) + '</b><i>' + esc(s2.why || 'Auto-save') + ' · ' + esc(saveSum(d)) + '</i></span><button type="button" data-hx="snap:' + i + '">Restore</button></div>' : ''; }).join('');
       careerOverlay('<div class="sv-panel">' + pmHeadX('\u{1F4BE} Save & backup', 'Auto-saves')
         + '<p class="ms-s">Now: <b>' + esc(saveSum(save)) + '</b>. Last saved on this device ' + whenTxt(save.savedAt) + '. Your game saves after every point, with a second backup copy on this device.</p>'
         + '<p class="ms-s sv-tip">\u{1F9EA} <b>Storage check:</b> ' + (DIAG.blocked ? '<b class="sv-w">This browser is blocking storage here. Progress will not be kept. Copy your save code before closing.</b>' : 'this device has kept the game’s storage since ' + whenTxt(DIAG.since) + ' and opened it ' + DIAG.opens + ' time' + (DIAG.opens === 1 ? '' : 's') + '. If this says 1 time after every reload, your browser is wiping it, so copy your save code before closing.') + (diagKeep === true ? ' Protected from cleanup.' : '') + '</p>'
         + '<p class="ms-s sv-tip">\u{1F510} <b>For a copy that survives a lost or reset phone</b>, copy your save code and text or email it to yourself. Last backup: ' + whenTxt(save.bkAt) + '.</p>'
-        + (BK.cloud ? '<p class="cd-h">☁️ Cloud save</p><p class="ms-s">' + cl + '</p>' : '')
+        + acctHtml() + (BK.cloud ? '<p class="cd-h">☁️ Cloud save</p><p class="ms-s">' + cl + '</p>' : '')
         + (BK.cloud ? (BK.pend ? '<button type="button" class="pc-go" data-hx="cl-load">⤵️ Load the cloud save</button><button type="button" class="pc-sec" data-hx="cl-keep">Keep this device’s progress</button>' : '<button type="button" class="pc-sec" data-hx="cl-save">☁️ Save to cloud now</button><button type="button" class="pc-sec" data-hx="cl-load">⤵️ Load from cloud</button>') : '')
         + '<p class="cd-h">\u{1F4C1} Save file</p><p class="ms-s">Download a file of your whole game. Load it on any device to pick up where you left off.</p>'
         + '<button type="button" class="pc-sec" data-hx="dl">\u{1F4BE} Download save file</button><label class="pc-sec sv-up">\u{1F4C2} Load a save file<input type="file" class="sv-file" accept=".json,.txt,application/json,text/plain" hidden></label>'
@@ -6260,7 +6299,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (a === 'features') { showFeatures(); return; } if (a === 'go') { closePost(); mode = v; save.mode = v; tourCtx = null; persist(); openPick(true); return; }
       if (a === 'more') { showMore(); return; } if (a === 'trophies' || a === 'cabinet') { showCabinet(true); return; } if (a === 'help') { showHelp(true); return; } if (a === 'faq') { showFaq(); return; }
       if (a === 'tutorial') { startTutorial(); return; } if (a === 'tutskip') { save.tutSkip = 1; persist(); renderPick(); return; }
-      if (['saves', 'cl-save', 'cl-keep', 'cl-load', 'dl', 'snap'].includes(a)) { saveX(a, v); return; }
+      if (['saves', 'cl-save', 'cl-keep', 'cl-load', 'dl', 'snap'].includes(a)) { saveX(a, v); return; } if (a.startsWith('fb-')) { fbAct(a); return; }
       if (a === 'name') { const inp = postEl.querySelector('.nm-i'); save.name = ((inp && inp.value) || '').replace(/[<>]/g, '').trim().slice(0, 14); persist(); try { showScore(); } catch(_) {} showSettings(save.name ? 'Saved. Welcome, ' + save.name + '!' : 'Name cleared. You’re “You” again.'); return; }
       if (a === 'set') { save.set = save.set || {}; save.set[v] = !save.set[v]; persist(); showSettings(); return; }
       if (a === 'bk-copy') { const code = backupCode(); let ok = false; try { if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(code).catch(() => {}); ok = true; } } catch(_) {} showSaves(ok ? 'Copied! Paste it into your notes or email it to yourself. It’s also in the box below.' : 'Here’s your code. Select it and copy it somewhere safe.', code); const ta = postEl.querySelector('.bk-t'); save.bkAt = Date.now(); persist(); if (ta) { try { ta.focus(); ta.select(); } catch(_) {} } return; }
