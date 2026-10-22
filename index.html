@@ -800,10 +800,12 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-top h1 span{color:#dfff4f}
 .sa-top a{font:600 12px var(--body);color:#cfe3e6;text-decoration:none;border:1px solid rgba(255,255,255,.3);border-radius:99px;padding:6px 10px;white-space:nowrap}
 .sa-board .sv-foot .sv-hide{display:none!important}
+.sa-build{font:12px/1.4 var(--mono);color:#8fb8bd;text-align:center;margin:6px 8px 0}.sa-build b{color:#dfff4f}.sa-build button{font:600 12px var(--body);margin-left:6px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#cfe3e6;cursor:pointer}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="./league/">League ›</a></div><div id="serve-slot"></div></header>
-<p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p></div>
+<body data-build="9"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="./league/">League ›</a></div><div id="serve-slot"></div></header>
+<p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p>
+<p class="sa-build">Build <b>9</b> · Oct 22, 2026, 4:27 PM CT<button type="button" id="sa-chk">Check for update</button></p></div>
 <script>
 (function(){
   'use strict';
@@ -6856,5 +6858,12 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     e.preventDefault(); scene.press();
   });
   ['pointerup', 'pointercancel'].forEach(ev => window.addEventListener(ev, () => scene.release()));
+  // build stamp: shows which version this is, and checks GitHub for a newer one
+  const chk = document.getElementById('sa-chk');
+  chk.addEventListener('click', async () => { chk.disabled = true; chk.textContent = 'Checking…';
+    try { const t = await (await fetch(location.pathname + '?v=' + Date.now(), {cache: 'no-store'})).text(), m = t.match(/data-build="(\d+)"/), n = m ? +m[1] : 0, me = +document.body.dataset.build;
+      if (n > me) { chk.textContent = 'Build ' + n + ' is out · tap to load'; chk.disabled = false; chk.onclick = () => location.replace(location.pathname + '?v=' + n); return; }
+      chk.textContent = 'You’re up to date'; } catch(_) { chk.textContent = 'Couldn’t check. Try again'; }
+    chk.disabled = false; });
 })();
 </script></body></html>
