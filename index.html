@@ -6255,6 +6255,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (a === 'pv') { const w2 = wardS(); (w2.seen = w2.seen || {})[v + ':' + v2] = 1; lockPv = lockPv && lockPv[0] === v && lockPv[1] === v2 ? null : [v, v2]; showLocker(); return; }
       if (a === 'boxes') { showBoxes(null); return; } if (a === 'open') { const r2 = openBox(); showBoxes(r2, !!r2); if (r2) { setTimeout(() => { cheer(r2.rar >= 3 ? 3 : 2); confetti(); if (r2.rar >= 3) { setTimeout(confetti, 350); quake(); } }, 1650); } return; }
       if (a === 'settings') { savesOpen = false; showSettings(); return; }
+      if (a === 'carry-yes') { if (carryD) adopt(carryD, 'bringing progress from the league site'); return; }
       if (a === 'tester') { showTester(); return; } if (a === 'book') { showBook(); return; }
       if (a === 'features') { showFeatures(); return; } if (a === 'go') { closePost(); mode = v; save.mode = v; tourCtx = null; persist(); openPick(true); return; }
       if (a === 'more') { showMore(); return; } if (a === 'trophies' || a === 'cabinet') { showCabinet(true); return; } if (a === 'help') { showHelp(true); return; } if (a === 'faq') { showFaq(); return; }
@@ -6797,6 +6798,10 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     });
     el.querySelector('.sv-chg').addEventListener('click', () => { if (pickOpen) return; ask('Leave this match?', () => { closeSign(); closePress(); closePost(); openPick(true); }); });
     try { cupEnsure(); } catch(_) {}
+    var carryD = null;
+    try { const m = /[#&]carry=([^&]+)/.exec(location.hash || ''); if (m) { try { history.replaceState(null, '', location.pathname + location.search); } catch(_) {} // progress handed over from the league site, which used to host the game
+        const d = parseSaveText(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+        if (d && (d.xp || d.car || d.played) && JSON.stringify(d) !== JSON.stringify(save)) { carryD = d; setTimeout(() => careerOverlay(pmHeadX('\u{1F4E6} Your progress', '') + '<p class="ms-t">Bring over your progress from the league site?</p><p class="ms-s">' + esc(saveSum(d)) + '. This replaces what’s on this device. A backup of this device’s save is kept under More → Save.</p><button type="button" class="pc-go" data-hx="carry-yes">Bring it over</button><button type="button" class="pc-sec" data-ovx="1">Not now</button>'), 700); } } } catch(_) {}
     syncMe(); setSnd(); showBest(); setHidden(save.hidden !== false); showScore(); if (save.hidden === false) openPick();
     setTimeout(() => { draw(); hint(); callEl.classList.remove('show'); }, 0);
     window.addEventListener('resize', () => { if (!running) draw(); });
