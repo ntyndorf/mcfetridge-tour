@@ -808,9 +808,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-build{font:12px/1.4 var(--mono);color:#8fb8bd;text-align:center;margin:6px 8px 0}.sa-build b{color:#dfff4f}.sa-build button{font:600 12px var(--body);margin-left:6px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#cfe3e6;cursor:pointer}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body data-build="11"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
+<body data-build="12"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
 <p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p>
-<p class="sa-build">Build <b>11</b> · Oct 22, 2026, 4:46 PM CT<button type="button" id="sa-chk">Check for update</button></p></div>
+<p class="sa-build">Build <b>12</b> · Oct 23, 2026, 9:50 AM CT<button type="button" id="sa-chk">Check for update</button></p></div>
 <script>
 (function(){
   'use strict';
@@ -834,7 +834,10 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     function setBtn(main, sub){ btxt.textContent = main; bsub.textContent = sub || ''; }
     const lvSel = el.querySelector('.sv-lv'), oppSel = el.querySelector('.sv-opp'), bestEl = el.querySelector('.sv-best'), sndBtn = el.querySelector('.sv-snd'), hideBtn = el.querySelector('.sv-hide');
     const reduce = (() => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(_) { return false; } })();
-    const H = 74, R = 6.5, PX = 22, CY = 24; let K = 1.6, CW = 0;
+    const H = 74, R = 6.5, PX = 22, CY = 24; let K = 1.6, CW = 0, dprRaw = 0;
+    let SLOW = false, slowAcc = 0, slowN = 0; try { SLOW = sessionStorage.getItem('mws-slow') === '1'; } catch(_) {}
+    const slowMon = iv => { if (SLOW || iv > 120 || iv <= 0) return; slowAcc = slowAcc*.97 + iv*.03; if (++slowN > 180 && slowAcc > 21.5) { SLOW = true; szDirty = true; try { sessionStorage.setItem('mws-slow', '1'); } catch(_) {} } };
+    const decoRaf = (cb, calm) => requestAnimationFrame(function f(t){ const lt = cb.__t || 0; if (cb.__t0 != null) slowMon(t - cb.__t0); cb.__t0 = t; if ((SLOW || calm) && t - lt < 31) { requestAnimationFrame(f); return; } cb.__t = t; cb(t); });
     let W = 300, dpr = 1, running = false, last = 0, clock = 0, spin = 0, puffs = [], callTimer = null, visible = true;
     let xfCv = null, xfT = -9, xfLast; const XF = .35; // cross-fade between scenes
     let ovationT = -9, pts = [0,0], games = [0,0], sets = [0,0], finalG = null, matchMini = false, setLog = [], server = 0, second = false, shot = null, rally = 0, lastPerfect = false, netWig = -9, power = 0, charging = null, crowdJump = -9;
@@ -863,7 +866,12 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     // storage check: counts how many times this device has opened the game with its storage intact
     const DIAG = (() => { let d = {opens: 0, since: Date.now()}; try { d = JSON.parse(localStorage.getItem(KEY + '-diag') || 'null') || d; } catch(_) {} d.opens = (d.opens || 0) + 1; d.last = Date.now(); try { localStorage.setItem(KEY + '-diag', JSON.stringify(d)); } catch(_) { d.blocked = 1; } return d; })();
     let diagKeep = null; try { if (navigator.storage && navigator.storage.persisted) navigator.storage.persisted().then(p => { diagKeep = p; }).catch(() => {}); } catch(_) {}
-    const persist = () => { save.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(_) {} bkKick(); MIR.kick(); };
+    // several persist() calls in one go (a point ending touches the save in a few places) become one write at the end of
+    // that same task, before anything else can run, so nothing is ever at risk; leaving the page writes immediately too
+    let persistQ = false, persistBlock = false; // persistBlock: a restore is about to reload the page, so a queued save must not overwrite it
+    const persistNow = () => { persistQ = false; if (persistBlock) return; save.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(_) {} bkKick(); MIR.kick(); };
+    const persist = () => { if (persistQ) return; persistQ = true; Promise.resolve().then(persistNow); };
+    try { window.addEventListener('pagehide', () => { if (persistQ) persistNow(); MIR.flush(); }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { if (persistQ) persistNow(); MIR.flush(); } }); } catch(_) {}
     let mode = ['exhibition', 'career', 'practice', 'gauntlet'].includes(save.mode) ? save.mode : 'exhibition', tourCtx = null, mBuff = null; // game mode; tourCtx = the career tournament and round being played
     // level sets how good the opponent is; the opponent sets how they play
     const LV = {'3.0': {hit: .86, sv: .6}, '3.5': {hit: 1, sv: 1}, '4.0': {hit: 1.09, sv: 1.3}, '5.0': {hit: 1.17, sv: 1.55, win: .85}};
@@ -1199,14 +1207,23 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (el.classList.contains('collapsed')) doIt(); else ask('Hide the game?', doIt);
     });
 
+    let szDirty = true, stageW = 0; // set by the observer; read the layout only then
+    try { new ResizeObserver(() => { szDirty = true; }).observe(cv); } catch(_) { setInterval(() => { szDirty = true; }, 1000); }
+    window.addEventListener('resize', () => { szDirty = true; }); try { window.addEventListener('orientationchange', () => { szDirty = true; }); } catch(_) {}
     function resize(){
-      const fs = el.classList.contains('fs'), w = cv.clientWidth || 300, d = window.devicePixelRatio || 1;
+      if (!szDirty && CW && cv.width && (window.devicePixelRatio || 1) === dprRaw) return; szDirty = false;
+      const fs = el.classList.contains('fs'), w = cv.clientWidth || 300; dprRaw = window.devicePixelRatio || 1; const d = Math.min(dprRaw, SLOW ? 2 : 4); stageW = stage.clientWidth;
       let k = 1.6; if (fs) { const avail = Math.max(118, stage.clientHeight - 40 - 118); k = Math.max(1.6, Math.min(avail/H, w/170)); }
       if (w === CW && d === dpr && k === K && cv.width) return;
       K = k; CW = w; W = w / K; dpr = d; cv.style.height = fs ? Math.round(H*K) + 'px' : ''; arenaEl.style.height = fs ? Math.round(40 + H*K + 2) + 'px' : '';
       cv.width = Math.round(w*dpr); cv.height = Math.round(H*K*dpr); fansW = -1;
     }
-    function call(text, cls, ms){ callEl.textContent = text; callEl.className = 'sv-call show ' + cls; callEl.style.fontSize = ''; try { const av = stage.clientWidth - 18, sw = callEl.scrollWidth; if (av > 0 && sw > av) callEl.style.fontSize = Math.max(12, parseFloat(getComputedStyle(callEl).fontSize)*av/sw).toFixed(1) + 'px'; } catch(_) {} clearTimeout(callTimer); callTimer = setTimeout(() => callEl.classList.remove('show'), ms || 1400);
+    let callFont = null, callPad = 0, callLs = 0, callUp = false; const callMeas = document.createElement('canvas').getContext('2d');
+    function call(text, cls, ms){ callEl.textContent = text; callEl.className = 'sv-call show ' + cls; callEl.style.fontSize = '';
+      try { if (!callFont) { const cs = getComputedStyle(callEl); callFont = [cs.fontStyle, cs.fontWeight, cs.fontSize, cs.fontFamily]; callLs = parseFloat(cs.letterSpacing) || 0; callUp = cs.textTransform === 'uppercase'; callPad = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0) + (parseFloat(cs.borderLeftWidth) || 0)*2; }
+        callMeas.font = callFont.join(' '); const ls = callLs, px = parseFloat(callFont[2]) || 16;
+        const sw = callMeas.measureText(callUp ? text.toUpperCase() : text).width + ls*text.length + callPad, av = (stageW || stage.clientWidth) - 18;
+        if (av > 0 && sw > av) callEl.style.fontSize = Math.max(12, px*av/sw).toFixed(1) + 'px'; } catch(_) {} clearTimeout(callTimer); callTimer = setTimeout(() => callEl.classList.remove('show'), ms || 1400);
       try { if (!reduce && callEl.animate) callEl.animate([{transform: 'translateX(-50%) scale(.84)', opacity: .15}, {transform: 'translateX(-50%) scale(1.05)', opacity: 1, offset: .6}, {transform: 'translateX(-50%) scale(1)', opacity: 1}], {duration: 300, easing: 'cubic-bezier(.2,.8,.3,1)'}); } catch(_) {} }
     function ptsText(){ const [a,b] = pts; if (isTb()) return a + '–' + b; if (a >= 3 && b >= 3) return a === b ? (matchMini ? 'Deciding point' : 'Deuce') : a > b ? 'Ad ' + meName() : 'Ad ' + opp(); const m = [0,15,30,40]; return m[a] + '–' + m[b]; }
     function showScore(){
@@ -2135,7 +2152,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       careerOverlay(pmHead('\u{1F3AC} ' + esc(lifeTitle(L, c)), MONTHS[Math.min(c.idx, MONTHS.length - 1)].m + ' · Season ' + c.season) + '<canvas class="pc-cv life-cv" aria-hidden="true"></canvas>'
         + '<p class="ms-s">' + esc(lifeSt.tx) + '</p>' + (lifeSt.fx ? '<p class="br-eff">' + esc(lifeSt.fx) + '</p>' : '')
         + (mg && !mg.done ? mgHtml(mg) : lifeSt.o ? '<div class="nx-row br-ch">' + lifeSt.o.map((o, i) => '<button type="button" data-cx="life:' + i + '">' + esc(lifeTxt(c, o[0])) + '</button>').join('') + '</div>' : (save.farewellEx && c.life && c.life.id === 'farewell' && testBk == null ? '<button type="button" class="pc-go" data-cx="lifeplay">\u{1F3BE} Walk out vs ' + esc(fullNm(save.farewellEx.id)) + '</button>' : '<button type="button" class="pc-go" data-cx="lifedone">' + (c.jail || c.ban ? 'Okay…' : 'Back to career') + '</button>')));
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.life-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, L.sc, performance.now()/1000 - lifeT0); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.life-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, L.sc, performance.now()/1000 - lifeT0); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function lifeChoose(i){
       const c = car_(), o = lifeSt && lifeSt.o && lifeSt.o[i]; if (!o) return; let out = o[1]; const L0 = LIFE[(c.life || {}).id] || {t: ''};
@@ -2225,7 +2242,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       careerOverlay(pmHead('\u{1F3E5} ' + I.test + ' results', esc(I.part)) + '<canvas class="pc-cv life-cv" aria-hidden="true"></canvas>'
         + '<p class="ms-t">' + esc(sevTxt) + ' (' + esc(I.part) + ')</p><p class="ms-s">The doctor recommends ' + adv + '. Playing on is allowed, but the risk of making it worse is ' + ['', 'low (25%)', 'high (45%)', 'very high (65%)'][I.sev] + ' each event, and your timing will suffer.</p>'
         + '<div class="nx-row br-ch"><button type="button" data-cx="doc:rest">Rest as advised</button><button type="button" data-cx="doc:play">Play through it</button></div>');
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.life-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, I.test === 'MRI' ? 'mri' : I.test === 'X-ray' ? 'xray' : 'doctor', performance.now()/1000 - lifeT0); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.life-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, I.test === 'MRI' ? 'mri' : I.test === 'X-ray' ? 'xray' : 'doctor', performance.now()/1000 - lifeT0); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     // ---- monthly news ----
     const WORLD = ['City unveils a 24-hour pizza museum', 'Scientists spot a bright new comet over the lake', 'Lakefront trail reopens after a full resurfacing', 'Record crowds at the summer air show', 'Local bakery sells a 300-pound donut', 'Researchers teach a robot to fold laundry', 'Chicago’s river turns green for the parade', 'Heat wave breaks after nine days', 'New train line opens ahead of schedule', 'Zoo welcomes twin penguin chicks', 'Startup promises self-tying shoelaces', 'Snowstorm closes schools for a day'];
@@ -2362,8 +2379,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       u = ease((t - .8)/.4); if (u > 0) { X.globalAlpha = u; tx('VS', W/2, 33, 4.6, acc, 'center', 800); X.globalAlpha = 1; }
       // one commentator line at a time
       const k = t < 3.2 ? 0 : t < 6.4 ? 1 : 2, t0 = [0, 3.2, 6.4][k], a = Math.min(ease((t - t0 - .15)/.35), 1);
-      if (t > .9 && a > 0) { const msg = '“' + cr.lines[k] + '”', mw = W*.84; X.font = '600 3.3px Arial, sans-serif'; const words = msg.split(' '), L = []; let ln = '';
-        words.forEach(wd => { const tt = ln ? ln + ' ' + wd : wd; if (X.measureText(tt).width > mw - 6 && ln) { L.push(ln); ln = wd; } else ln = tt; }); L.push(ln);
+      if (t > .9 && a > 0) { const mw = W*.84, ck = k + '|' + mw.toFixed(1); cr.wrap = cr.wrap || {}; let L = cr.wrap[ck];
+        if (!L) { const msg = '“' + cr.lines[k] + '”'; X.font = '600 3.3px Arial, sans-serif'; const words = msg.split(' '); L = []; let ln = '';
+          words.forEach(wd => { const tt = ln ? ln + ' ' + wd : wd; if (X.measureText(tt).width > mw - 6 && ln) { L.push(ln); ln = wd; } else ln = tt; }); L.push(ln); cr.wrap[ck] = L; }
         const lh = 4.4, bh = L.length*lh + 3.6, y0 = H - 3 - bh; X.globalAlpha = a; X.fillStyle = 'rgba(255,255,255,.07)'; X.fillRect((W - mw)/2, y0, mw, bh); X.fillStyle = acc; X.fillRect((W - mw)/2, y0, .8, bh);
         L.forEach((l2, i2) => tx(l2, W/2, y0 + 4.6 + i2*lh, 3.3, '#e9f1f8', 'center', 600)); X.globalAlpha = 1; }
       if (t > 9.5) { X.fillStyle = 'rgba(0,0,0,' + Math.min(1, (t - 9.5)/.5).toFixed(3) + ')'; X.fillRect(0, 0, W, H); }
@@ -3228,6 +3246,10 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (cer !== xfLast) { if (xfLast !== undefined && !reduce && cv.width) { try { if (!xfCv) xfCv = document.createElement('canvas'); if (xfCv.width !== cv.width || xfCv.height !== cv.height) { xfCv.width = cv.width; xfCv.height = cv.height; } const x2 = xfCv.getContext('2d'); x2.setTransform(1, 0, 0, 1, 0, 0); x2.clearRect(0, 0, xfCv.width, xfCv.height); x2.drawImage(cv, 0, 0); xfT = clock; } catch(_) {} } xfLast = cer; }
       ctx.setTransform(dpr*K,0,0,dpr*K,0,0); ctx.clearRect(0,0,W,H);
       { const sk = clock - shakeT; if (sk >= 0 && sk < .45 && !setv('calm')) { const m = shakeAmt*(1 - sk/.45); ctx.translate((Math.random() - .5)*m*2, (Math.random() - .5)*m*2); } }
+      if (cer && (cer.kind === 'travel' || cer.kind === 'booth')) { // these scenes cover the whole court, so skip painting the stadium underneath
+        (cer.kind === 'travel' ? drawTravel : drawBooth)(clock - cer.t0);
+        { const u = (clock - xfT)/XF; if (xfCv && u >= 0 && u < 1) { ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1 - u*u*(3 - 2*u); ctx.drawImage(xfCv, 0, 0); ctx.restore(); } }
+        return; }
       let b;
       if (shot) { const p = pos(shot); b = {x: worldX(shot, p.x), y: p.y, sq: p.sq}; }
       else { // the server bounces the ball twice before serving
@@ -3495,7 +3517,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const liveOk = () => visible && !document.hidden && !el.classList.contains('collapsed') && !pickOpen && !postOpen && !pressOpen && !signOpen;
     function frame(now){
       if (!visible || el.classList.contains('collapsed')) { running = false; return; }
-      const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
+      if (last) slowMon(now - last); const dt = Math.min(.05, (now - (last || now)) / 1000); last = now;
       const c0 = clock; clock += dt*(cer && setv('fast') ? 1.7 : 1); spin += dt * 14;
       moveFeet(dt);
       if (!shot) [.2, .6].forEach(m => { if (c0 - ritualT < m && clock - ritualT >= m) bounce(.22); });
@@ -4037,7 +4059,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         if (!o.preview) { save.unlock = (save.unlock || []).concat(unlock[0]); persist(); RCOL.push(unlock); } }
       postEl.innerHTML = pmHead('\u{1F6AA} Locker room', o.won ? 'After the win' : 'After the loss') + '<canvas class="pc-cv lk-cv" aria-hidden="true"></canvas><p class="lk-cap">' + cap + '</p>' + extra + pmGo();
       const lk = {kind, t0: performance.now()/1000, mate, unlock, cv: postEl.querySelector('.lk-cv'), sfx: {}};
-      post.lk = lk; const loop = () => { if (!post || post.lk !== lk) return; try { drawLocker(lk); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      post.lk = lk; const loop = () => { if (!post || post.lk !== lk) return; try { drawLocker(lk); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function lkBuzz(){ if (!snd()) return; const a = fx.a, t = a.currentTime; [0, .22].forEach(o => { const os = a.createOscillator(), g = env(t + o, .12, .005, .14); os.type = 'square'; os.frequency.value = 95; const f = filt('lowpass', 400); os.connect(f); f.connect(g); out(g, 0); os.start(t + o); os.stop(t + o + .17); }); }
     function lkKnock(){ if (!snd()) return; const a = fx.a, t = a.currentTime; [0, .18, .36].forEach(o => { const os = a.createOscillator(), g = env(t + o, .35, .002, .09); os.type = 'sine'; os.frequency.setValueAtTime(150, t + o); os.frequency.exponentialRampToValueAtTime(70, t + o + .08); os.connect(g); out(g, .15); os.start(t + o); os.stop(t + o + .12); }); }
@@ -4667,7 +4689,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + '<ol class="wk-l">' + W.lines.map((ln, i) => '<li style="animation-delay:' + (i*WKD + .25).toFixed(2) + 's"><span>' + PLAN[W.p[i]][0] + '</span><div><b>Week ' + (i + 1) + ' · ' + PLAN[W.p[i]][1] + '</b><i>' + esc(ln) + '</i></div></li>').join('')
         + '<li class="wk-4" style="animation-delay:' + (3*WKD + .25).toFixed(2) + 's"><span>\u{1F3BE}</span><div><b>Week 4 · ' + esc(t.short) + '</b><i>' + esc(W.inj ? 'You overdid it: ' + W.inj + ' strain. Careful out there.' : wkFxTxt(W.f || {})) + '</i></div></li></ol>'
         + (back === 'tester' ? '<button type="button" class="pc-go" data-hx="tester">Back</button>' : '<button type="button" class="pc-go" data-car="back">Back to career</button>'));
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.wk-cv'); if (post !== tok || !cvs) return; try { drawWeeks(cvs, performance.now()/1000 - wkT0); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.wk-cv'); if (post !== tok || !cvs) return; try { drawWeeks(cvs, performance.now()/1000 - wkT0); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function drawWeeks(cvs, t){
       const W = wkView; if (!W || !cvs.getBoundingClientRect) return; const r = cvs.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -4879,7 +4901,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + '<div class="md-tabs hm-tabs">' + T.map(([k, l]) => '<button type="button" class="' + (homeTab === k ? 'on' : '') + '" data-cx="hm:' + k + '">' + l + '</button>').join('') + '</div>'
         + '<p class="hm-bank"><b>' + money(c.earn || 0, true) + '</b> in the bank · ' + (homeTab === 'furn' ? 'Comfort ' + comfortOf(c) + ' · Mood ' + NEED_NM.mood(moodOf(c)).toLowerCase() : homeTab === 'garage' ? carCount(c) + ' of ' + garageCap() + ' parking spot' + (garageCap() > 1 ? 's' : '') + ' used' : (c.pets || []).length + ' of 4 pets') + '</p>'
         + (homeTab === 'furn' ? furnHtml(c) : homeTab === 'garage' ? garageHtml(c) : petsHtml(c)) + '<button type="button" class="pc-go" data-car="back">Back to career</button>');
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.hm-cv'); if (post !== tok || !cvs) return; try { if (homeTab === 'garage') drawGarage(cvs); else drawHome(cvs); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.hm-cv'); if (post !== tok || !cvs) return; try { if (homeTab === 'garage') drawGarage(cvs); else drawHome(cvs); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function furnHtml(c){ const ht = homeTier();
       return FURN.map(([s, lbl, items]) => { const cur = furnOf(c, s);
@@ -4963,7 +4985,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       return [pickQ([n + ' said your forehand is “more of a rumor.” Any response?', n + ' told reporters you got lucky last month. Fair?', n + ' says the next time you two play, it won’t be close. Thoughts?', n + ' posted your double fault with three laughing emojis. Seen it?']),
         ['I respect ' + n + '. I’d rather let my tennis do the talking.', 'Tell ' + n + ' I’ll see them in the draw.', 'I’ve heard worse from my mom after junior matches.', 'Funny. ' + n + ' talks a lot for someone with that backhand.'], 'riv']; }
     let rvT0 = 0;
-    function rvLoop(cls, fn){ const tok = post, loop = () => { const cvs = postEl.querySelector('.' + cls); if (post !== tok || !cvs) return; try { fn(cvs, performance.now()/1000 - rvT0); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop); }
+    function rvLoop(cls, fn){ const tok = post, loop = () => { const cvs = postEl.querySelector('.' + cls); if (post !== tok || !cvs) return; try { fn(cvs, performance.now()/1000 - rvT0); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop); }
     function showRivIntro(){ const c = car_(), R = rivOf(c); if (!R || R.st !== 0) { closePost(); openPick(true); return; } if (R.jab == null) { R.jab = Math.floor(Math.random()*RIV_JAB.length); persist(); } rvT0 = performance.now()/1000; const n = fullNm(R.id);
       careerOverlay(pmHead('\u{1F624} Rival alert', esc(n)) + '<canvas class="pc-cv rv-cv" aria-hidden="true"></canvas>'
         + '<p class="ms-s">' + esc(n + ' posted about you: “' + RIV_JAB[R.jab] + '” The comments are on fire and the press is already calling it a rivalry.') + '</p>'
@@ -5227,12 +5249,12 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + (ch ? '' : '<p class="ms-s">Next up in the ' + rn + (sd ? ' · the No. ' + sd + ' seed' : '') + ':</p>' + oppCard(o)
         + '<div class="nx-b">' + (bigOutdoor(t) && r >= 0 ? '<div class="nx-row cr-sess"><button type="button" class="pc-go" data-car="play" data-sess="night">\u{1F319} Night session</button><button type="button" class="pc-go" data-car="play" data-sess="day">\u2600\uFE0F Day session</button></div><p class="cr-sn">Night: louder crowd, you start fired up · Day: quicker conditions, bigger serve</p>' : '<button type="button" class="pc-go" data-car="play">Play the ' + rn + '</button>') + '<div class="nx-row n3"><button type="button" data-car="home">Career</button><button type="button" data-car="draw">Draw</button><button type="button" data-car="race">Standings</button></div></div>'));
       post.adv = true;
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.br-cv'); if (post !== tok || !cvs) return; try { drawBR(cvs, ev); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.br-cv'); if (post !== tok || !cvs) return; try { drawBR(cvs, ev); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
       cheer(1);
     }
     // ---- your place: pick the month's tournament on your phone ----
     let homeRaf = 0;
-    function homeLoop(){ const cvs = pickEl.querySelector('.home-cv'); if (!pickOpen || mode !== 'career' || !cvs) { homeRaf = 0; return; } try { drawHome(cvs); } catch(_) {} homeRaf = requestAnimationFrame(homeLoop); }
+    function homeLoop(){ const cvs = pickEl.querySelector('.home-cv'); if (!pickOpen || mode !== 'career' || !cvs) { homeRaf = 0; return; } try { const r = cvs.getBoundingClientRect(); if (r.bottom > 0 && r.top < (window.innerHeight || 9999)) drawHome(cvs); } catch(_) {} homeRaf = decoRaf(homeLoop, 1); }
     function drawHome(cvs){
       if (!cvs.getBoundingClientRect) return; const r = cvs.getBoundingClientRect(); if (!r.width || !r.height) return;
       const c = cvs.getContext('2d'), d = window.devicePixelRatio || 1, S = r.height/40, w = r.width/S, cx = w/2, now = performance.now()/1000, P = pals(), tier = homeTier(), C = car_(), F = s => furnOf(C, s);
@@ -5373,7 +5395,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       const c = car_(), m = RKMS.find(x => x[0] === c.msPend); c.msPend = null; persist(); if (!m) { careerAction(c.over ? 'review' : 'home'); return; }
       msT0 = performance.now()/1000;
       careerOverlay(pmHead('\u{1F389} New career high', rkTxt(myRank()) + ' in the world') + '<canvas class="pc-cv rkms-cv" aria-hidden="true"></canvas><p class="aw-w">' + esc(m[1]) + '</p><p class="ms-s">' + esc(m[2]) + '</p>' + endBtn(c));
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.rkms-cv'); if (post !== tok || !cvs) return; try { drawRkMs(cvs, m); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.rkms-cv'); if (post !== tok || !cvs) return; try { drawRkMs(cvs, m); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
       cheer(3); confetti();
     }
     function drawRkMs(cvs, m){
@@ -5457,7 +5479,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + '<p class="ms-t">A career to remember.</p><div class="cr-sum"><div><b>' + c.season + '</b><span>seasons</span></div><div><b>' + titles + '</b><span>titles · ' + slams + ' Slams</span></div><div><b>' + (c.bestRk ? 'No. ' + c.bestRk : '—') + '</b><span>best ranking</span></div></div>'
         + '<p class="ms-s">' + wl(L) + ' in matches · ' + money(c.earn || 0, true) + ' in prize money' + (c.no1m ? ' · ' + c.no1m + ' months at No. 1' : '') + '. Your collection, cards, stamps and gear stay with you.</p>'
         + '<button type="button" class="pc-go" data-car="newcareer">Start a new career</button><button type="button" class="pc-sec" data-car="stats">Career stats</button>');
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.ret-cv'); if (post !== tok || !cvs) return; try { drawRetire(cvs); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.ret-cv'); if (post !== tok || !cvs) return; try { drawRetire(cvs); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
       cheer(3);
     }
     function drawRetire(cvs){
@@ -5551,15 +5573,16 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       return bits.join(' · ') || 'New game'; }
     function whenTxt(t){ if (!t) return 'never'; const s = (Date.now() - t)/1000; if (s < 50) return 'just now'; if (s < 3600) return Math.round(s/60) + ' min ago'; if (s < 86400) return Math.round(s/3600) + ' hr ago';
       try { return new Date(t).toLocaleDateString(undefined, {month: 'short', day: 'numeric'}) + ', ' + new Date(t).toLocaleTimeString(undefined, {hour: 'numeric', minute: '2-digit'}); } catch(_) { return Math.round(s/86400) + ' days ago'; } }
-    function snapList(){ try { const L = JSON.parse(localStorage.getItem(SNAPK) || '[]'); return Array.isArray(L) ? L : []; } catch(_) { return []; } }
+    let snapHeadT = null; // newest auto-save time, so a save doesn't have to read and parse every snapshot to find it
+    function snapList(){ try { const L = JSON.parse(localStorage.getItem(SNAPK) || '[]'); const A = Array.isArray(L) ? L : []; snapHeadT = A.length ? A[0].t || 0 : 0; return A; } catch(_) { return []; } }
     function snapNow(why){
       try { const s = JSON.stringify(save), L = snapList(); if (L[0] && L[0].d === s) return; if (s.length > 15e5) return;
-        L.unshift({t: Date.now(), why: why || '', d: s}); while (L.length > 3) L.pop();
+        L.unshift({t: Date.now(), why: why || '', d: s}); while (L.length > 3) L.pop(); snapHeadT = L[0].t;
         try { MIR.set('snaps', JSON.stringify(L)).catch(() => {}); } catch(_) {} for (;;) { try { localStorage.setItem(SNAPK, JSON.stringify(L)); return; } catch(_) { if (L.length <= 1) { localStorage.removeItem(SNAPK); return; } L.pop(); } }
       } catch(_) {} }
     function bkKick(){
       if (!BK) return; BK.dirty = true; if (!save.firstAt) save.firstAt = Date.now();
-      const L = snapList(); if (!L.length || Date.now() - L[0].t > 6e5) snapNow('Auto-save');
+      if (snapHeadT === null) snapList(); if (!snapHeadT || Date.now() - snapHeadT > 6e5) snapNow('Auto-save');
       if (BK.cloud && BK.ready && !BK.pend) { clearTimeout(BK.timer); BK.timer = setTimeout(() => cloudPut(), 12000); }
     }
     // gzip + base64 where the browser supports it, so big careers fit; split across documents just in case
@@ -5594,7 +5617,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     }
     function adopt(d, why){
       snapNow('Before ' + why); Object.keys(save).forEach(k2 => delete save[k2]); Object.assign(save, d); save.savedAt = Date.now();
-      try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(_) {} try { location.reload(); } catch(_) {}
+      persistBlock = true; setTimeout(() => { persistBlock = false; }, 4000); try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(_) {} try { location.reload(); } catch(_) {}
     }
     async function cloudInit(){
       try {
@@ -5659,7 +5682,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (!MIR.ok) return; const raw = await MIR.get('save'); let m = null; try { m = raw ? JSON.parse(raw) : null; } catch(_) {}
       if (m && m.savedAt && (!save.savedAt || m.savedAt > save.savedAt + 6e4)) {
         let back = false; try { localStorage.setItem(KEY, raw); back = localStorage.getItem(KEY) === raw; } catch(_) {}
-        if (back) { try { sessionStorage.setItem('mws-restored', '1'); } catch(_) {} location.reload(); return; }
+        if (back) { persistBlock = true; setTimeout(() => { persistBlock = false; }, 4000); try { sessionStorage.setItem('mws-restored', '1'); } catch(_) {} location.reload(); return; }
         Object.keys(save).forEach(k2 => delete save[k2]); Object.assign(save, m); setTimeout(() => { try { toast('\u{1F6DF} Restored your progress from the backup copy'); } catch(_) {} }, 1500); }
       else if (save.savedAt && (!m || save.savedAt > (m.savedAt || 0))) MIR.flush();
       const sr = await MIR.get('snaps'); if (sr && !localStorage.getItem(KEY + '-snaps')) { try { localStorage.setItem(KEY + '-snaps', sr); } catch(_) {} }
@@ -6151,7 +6174,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
           return '<button type="button" class="lk-i' + (on ? ' on' : '') + (own ? '' : ' lk') + (lockPv && lockPv[0] === lockTab && lockPv[1] === it[0] ? ' pv' : '') + '" data-hx="' + (own ? 'eq:' : 'pv:') + lockTab + ':' + it[0] + '" style="--rc:' + RAR[it[3]][1] + '"><span class="lk-sw" style="background:' + col + '"></span>' + (isNewIt(lockTab, it[0]) ? '<em class="lk-new">NEW</em>' : '') + '<b>' + esc(it[1]) + '</b><i>' + (own ? RAR[it[3]][0] : '\u{1F512} ' + esc(it[4])) + '</i></button>'; }).join('') + '</div>'
         + (mode === 'career' && save.car && save.car.kitOn ? '<p class="ms-s">In Career you wear your sponsor’s kit shirt. Change it on the Career Team screen.</p>' : '')
         + '<button type="button" class="pc-go" data-ovx="1">Back</button>');
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.lk-cv'); if (post !== tok || !cvs) return; try { drawLockerPrev(cvs); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.lk-cv'); if (post !== tok || !cvs) return; try { drawLockerPrev(cvs); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function drawLockerPrev(cvs){
       if (!cvs.getBoundingClientRect) return; const r = cvs.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -6220,7 +6243,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         + '<canvas class="pc-cv rm-cv" style="height:auto;aspect-ratio:100/' + hU + '" aria-hidden="true"></canvas>'
         + '<p class="ms-s">' + (L.length ? 'Career titles sit up top, biggest first. Exhibition trophies fill the lower shelves. The room gets fancier as the shelves fill.' : 'Empty for now. Win a Career title or an Exhibition final to put your first trophy up.') + '</p>'
         + '<button type="button" class="pc-go" data-car="back">Back</button>');
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.rm-cv'); if (post !== tok || !cvs) return; try { drawRoom(cvs, L, shelves, hU); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.rm-cv'); if (post !== tok || !cvs) return; try { drawRoom(cvs, L, shelves, hU); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function drawRoom(cvs, L, shelves, hU){
       if (!cvs.getBoundingClientRect) return; const r = cvs.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -6448,7 +6471,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
           : '<p class="aw-k">Award ' + (A.i + 1) + ' of ' + A.list.length + '</p><p class="ms-t">' + esc(cur[0]) + '</p>'
             + (A.open ? '<p class="aw-w">' + (cur[1] === 'you' ? '\u{1F389} You!' : esc(fullNm(cur[1]))) + '</p><button type="button" class="pc-go" data-cx="awnext">' + (A.i < A.list.length - 1 ? 'Next award' : 'Finish the night') + '</button>'
               : '<p class="ms-s">And the winner is…</p><button type="button" class="pc-go" data-cx="awopen">Open the envelope</button>')));
-      const tok = post, loop = () => { const cvs = postEl.querySelector('.aw-cv'); if (post !== tok || !cvs) return; try { drawAwards(cvs); } catch(_) {} requestAnimationFrame(loop); }; requestAnimationFrame(loop);
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.aw-cv'); if (post !== tok || !cvs) return; try { drawAwards(cvs); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
     }
     function drawAwards(cvs){
       if (!cvs.getBoundingClientRect) return; const r = cvs.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -6722,14 +6745,14 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const fsBtn = el.querySelector('.sv-fs');
     function setFs(on){
       el.classList.toggle('fs', on); document.documentElement.classList.toggle('sv-fs-on', on); fsBtn.textContent = on ? '✕ Exit full screen' : '⛶ Full screen';
-      CW = 0; setTimeout(() => { resize(); draw(); }, 60);
+      CW = 0; szDirty = true; setTimeout(() => { resize(); draw(); }, 60);
     }
     fsBtn.addEventListener('click', () => {
       const on = !el.classList.contains('fs'); setFs(on);
       try { if (on && el.requestFullscreen && !document.fullscreenElement) el.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {}); } catch(_) {}
     });
     try { document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && el.classList.contains('fs')) setFs(false); }); } catch(_) {}
-    window.addEventListener('resize', () => { if (el.classList.contains('fs')) { CW = 0; resize(); draw(); } });
+    window.addEventListener('resize', () => { if (el.classList.contains('fs')) { CW = 0; szDirty = true; resize(); draw(); } });
     el.querySelector('.sv-help').addEventListener('click', () => { if (pickOpen) { pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); showHelp(true); return; } if (postOpen || signOpen || pressOpen) return; if (shot || review) { call('Finish the point first', 'in', 1300); return; } if (cer && !(cer.kind === 'toss' && !cer.choice)) return; showHelp(); });
     el.querySelector('.sv-rst').addEventListener('click', () => mode === 'gauntlet' && save.ga && save.ga.active ? ask('Restarting ends your Gauntlet run. Restart?', () => { save.ga.active = false; persist(); mode = 'gauntlet'; openPick(true); }) : ask('Restart this match?', () => newMatch(false)));
     // opponent select screen
