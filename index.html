@@ -802,6 +802,8 @@ button.danger{border-color:var(--loss);background:var(--loss);color:#fff}
 .ng-e{font-size:34px}.ng b{font:700 20px var(--display);letter-spacing:.04em;text-transform:uppercase;color:#fff}.ng p{margin:0;font:13px/1.45 var(--body);color:#cfe3e6}
 .ng-i{width:100%;max-width:280px;box-sizing:border-box;font:700 18px var(--body);text-align:center;padding:10px 12px;border-radius:10px;border:1.5px solid rgba(255,255,255,.3);background:#0a1f24;color:#fff}
 .ng-i:focus{outline:2px solid #dfff4f;outline-offset:1px}.ng .ng-err{min-height:16px;color:#ff9b8f;font-weight:600}.ng .pk-go{width:100%;max-width:280px}
+.sv-post .ms-s{white-space:pre-line}
+.dc-cv{margin-bottom:2px}
 
 html,body{background:#0a2a30}
 body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
@@ -815,9 +817,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-build{font:12px/1.4 var(--mono);color:#8fb8bd;text-align:center;margin:6px 8px 0}.sa-build b{color:#dfff4f}.sa-build button{font:600 12px var(--body);margin-left:6px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#cfe3e6;cursor:pointer}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body data-build="13"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
+<body data-build="14"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
 <p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p>
-<p class="sa-build">Build <b>13</b> · Oct 23, 2026, 11:04 AM CT<button type="button" id="sa-chk">Check for update</button></p></div>
+<p class="sa-build">Build <b>14</b> · Oct 23, 2026, 11:27 AM CT<button type="button" id="sa-chk">Check for update</button></p></div>
 <script>
 (function(){
   'use strict';
@@ -879,7 +881,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const persistNow = () => { persistQ = false; if (persistBlock) return; save.savedAt = Date.now(); try { localStorage.setItem(KEY, JSON.stringify(save)); } catch(_) {} bkKick(); MIR.kick(); };
     const persist = () => { if (persistQ) return; persistQ = true; Promise.resolve().then(persistNow); };
     try { window.addEventListener('pagehide', () => { if (persistQ) persistNow(); MIR.flush(); }); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') { if (persistQ) persistNow(); MIR.flush(); } }); } catch(_) {}
-    let mode = ['exhibition', 'career', 'practice', 'gauntlet'].includes(save.mode) ? save.mode : 'exhibition', tourCtx = null, mBuff = null; // game mode; tourCtx = the career tournament and round being played
+    let mode = ['exhibition', 'career', 'practice', 'gauntlet'].includes(save.mode) ? save.mode : 'exhibition', tourCtx = null, mBuffFrame = false, mBuff = null; // game mode; tourCtx = the career tournament and round being played
     // level sets how good the opponent is; the opponent sets how they play
     const LV = {'3.0': {hit: .86, sv: .6}, '3.5': {hit: 1, sv: 1}, '4.0': {hit: 1.09, sv: 1.3}, '5.0': {hit: 1.17, sv: 1.55, win: .85}};
     const TIER = {'3.0': 'Rookie', '3.5': 'Pro', '4.0': 'Elite', '5.0': 'Legend'}, TIERS = ['3.0', '3.5', '4.0', '5.0'];
@@ -2130,9 +2132,56 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const lifeTitle = (L, c) => typeof L.t === 'function' ? L.t(c) : L.t;
     function stakes(c){ const b = c.earn || 0; if (b < 100) return []; const L = [.02, .1, .3].map(f => Math.max(100, Math.round(b*f/100)*100)); return L.filter((x, i) => L.indexOf(x) === i && x <= b); }
     function lifeNext(c){ if (c && c.life && c.life.done && (c.lifeQ || []).length) c.life = c.lifeQ.shift(); }
+    const tnm = id => (id === 'fin' ? FINALS : TBYID[id] || {}).name || 'last tournament';
+    const KIDN = ['Maya', 'Leo', 'Ava', 'Sam', 'Nora', 'Eli', 'Zoe', 'Max', 'Ruby', 'Theo'];
+    const rvN = c => { const R = rivOf(c); return R ? fullNm(R.id) : 'your rival'; };
+    const realPros = () => PROS.filter(p => !['wacky', 'cup', 'retro'].includes(catOf(p[0])) && p[0] !== 'mystery');
+    function feedTxt(c){ const hl = (c.hist || []).filter(h => h.season === c.season && h.tid !== 'rest').slice(-1)[0], r = myRank(), R = rivOf(c), me = meName(), P = realPros(), a = pickQ(P), b2 = pickQ(P);
+      const L = ['Your feed this morning:'];
+      L.push(hl ? (hl.res === 3 ? '@TourTimes: ' + me + ' lifts the ' + tnm(hl.tid) + ' trophy \u{1F3C6}' : '@TourTimes: ' + me + ' bows out at the ' + tnm(hl.tid) + '. On to the next one.') : '@TourTimes: ' + me + ' is a name to watch this season.');
+      if (r) L.push('@RankingsBot: ' + me + ' is No. ' + r + ' in the world this week.');
+      if (c.pressTone === 3) L.push('@CourtsideTea: ' + me + '’s press conference was… a lot \u{1F62C}'); else if (c.pressTone === 2) L.push('@TennisMemes: ' + me + ' said WHAT in the presser \u{1F602}'); else if (c.pressTone === 0) L.push('@TennisWriter: Nothing but class from ' + me + ' after that match.');
+      if (R) L.push('@GossipGrip: ' + fullNm(R.id) + ' liked a post calling ' + me + ' “a one-hit wonder” \u{1F440}');
+      L.push('@CourtsideGossip: ' + pickQ([a[2] + ' spotted buying deep-dish at 2 a.m.', a[2] + ' changed racquet brands. Again.', a[2] + ' and ' + b2[2] + ' were seen at the same Cubs game. Doubles team incoming?', a[2] + ' brought 14 bananas to practice. We counted.']));
+      L.push(c.kidFan ? '@proud_parent: ' + c.kidFan.n + ' still has your letter on the fridge ❤️' : '@superfan_99: saw ' + me + ' at O’Hare. Way taller in person!');
+      return L.join('\n'); }
+    Object.assign(LIFE, {
+      mailbag: {t: 'Fan mail', sc: 'mail', w: c => !c.kidFan && fameOf(c) >= 15 ? 1.4 : 0, tx: c => { c.kidPend = c.kidPend || pickQ(KIDN); return 'A letter from ' + c.kidPend + ', age 9, with a crayon drawing of you mid-serve: “Dear ' + meName() + ', I play tennis too. How do you hit it so hard? Please write back!”'; },
+        o: [['Write back ✉️', {e: {kid2: 1, mood: 5, fame: 2, en: -2}, t: 'You write a full page, and add a tip about the toss.'}], ['Send a signed racquet ($300)', {e: {kid2: 1, earn: -300, mood: 4, fame: 3}, t: 'You sign it “To my favorite fan.” It ships today.'}], ['Too busy this month', {e: {mood: -2}, t: 'The letter goes in a drawer. You feel a little bad about it.'}]]},
+      kidsign: {t: 'Front-row fan', sc: 'superfan', w: c => c.kidFan && !c.kidFan.seen && mo(c) - c.kidFan.m >= 2 ? 6 : 0, tx: c => 'Remember ' + c.kidFan.n + '? At your last tournament you spotted them in the front row with a giant sign: “' + c.kidFan.n.toUpperCase() + ' ♥ ' + meName().toUpperCase() + '. THANKS FOR WRITING BACK!”',
+        o: [['Toss them your wristband', {e: {kidSeen: 1, form: 6, mood: 6, fame: 2}, t: c => c.kidFan.n + ' catches it with both hands. Best day of their life. Maybe yours too.'}], ['Sign their sign', {e: {kidSeen: 1, mood: 8, rep: 4}, t: 'The crowd cheers when you jog over. The sign goes straight on their bedroom wall.'}]]},
+      gearday: {t: 'Racquet lab', sc: 'racquet', w: c => c.gearS !== c.season ? (c.spon ? 1.6 : .8) : 0, tx: c => (c.spon && BRANDS[c.spon.b] ? BRANDS[c.spon.b].n + ' invites you to their racquet lab.' : 'A racquet company invites you to test their new frames.') + ' Three frames are laid out on the table, freshly strung.',
+        o: [['Power frame \u{1F4A5}', {e: {frame: 'power'}, t: 'Huge serve, a little less control. You feel it right away.'}], ['Control frame \u{1F3AF}', {e: {frame: 'control'}, t: 'Pinpoint feel. Every ball goes where you look.'}], ['Keep your old faithful', {e: {frame: 'none', mood: 4}, t: 'You know every string on that thing. Not changing now.'}]]},
+      cover: {t: 'Cover shoot', sc: 'shoot', w: c => c.idx <= 2 && c.coverS !== c.season && fameOf(c) >= 10 ? 6 : 0, tx: c => { c.coverMag = c.coverMag && c.coverS !== c.season ? c.coverMag : pickQ(['Tennis Monthly', 'Ace Magazine', 'Baseline Quarterly', 'Chicago Sport']); return c.coverMag + ' wants you on the cover of its season preview. The photographer asks for your best look in your current kit.'; },
+        o: [['Serious athlete', {e: {cover: 1, fame: 4}, t: 'Arms crossed, racquet on the shoulder. Very serious. Very cool.'}], ['Big smile', {e: {cover: 1, fame: 3, mood: 4}, t: 'Your mom buys ten copies.'}], ['Trophy pose \u{1F60E}', {e: {cover: 1, fame: 6, heat: 5}, t: c => 'You pose with a trophy you haven’t won yet. ' + rvN(c) + ' is not amused.'}]]},
+      rv_mic: {t: 'Hot mic', sc: 'studio', w: c => { const R = rivOf(c); return R && R.st >= 1 && R.st <= 2 ? 1.3 : 0; }, tx: c => 'A courtside mic caught ' + rvN(c) + ' saying you “can’t handle a real rally.” The clip is everywhere.',
+        o: [['Fire back online', {e: {heat: 12, fame: 4}, t: 'Your reply gets 200K likes. This is going to be a long season.'}], ['Laugh it off', {e: {heat: -4, mood: 2, rep: 3}, t: '“See you on court,” you say, and leave it there.'}], ['Send a pizza to their hotel \u{1F355}', {e: {heat: -10, fame: 3, earn: -60}, t: 'Deep dish, with a note: “For your next long rally.” Even they laugh.'}]]},
+      rv_elev: {t: 'Going up', sc: 'elevator', w: c => { const R = rivOf(c); return R && R.st >= 1 ? 1 : 0; }, tx: c => 'You step into the hotel elevator. ' + rvN(c) + ' is already in there. Twenty-three floors to go.',
+        o: [['Small talk about the weather', [{p: .6, e: {heat: -8}, t: '“Windy, huh?” “Yeah.” It’s progress.'}, {p: .4, e: {heat: 4}, t: 'The silence after “Windy, huh?” is the longest of your life.'}]], ['Stare straight ahead', {e: {heat: 2}, t: 'Floor 23 has never felt so far away.'}], ['Press every button \u{1F608}', {e: {heat: 10, mood: 5, fame: 2}, t: 'Someone filmed it. Petty, but iconic.'}]]},
+      rv_dbl: {t: 'Doubles with your rival', sc: 'court', w: c => { const R = rivOf(c); return R && R.st >= 1 && c.dblS !== c.season && (R.st === 3 || R.heat <= 50) ? 1.2 : 0; }, tx: c => 'The tournament director has an idea for a charity exhibition: you and ' + rvN(c) + ', on the same side of the net.',
+        o: [['Partner up \u{1F91D}', [{p: .6, e: {dbl: 1, heat: -15, fame: 5, mood: 5}, t: 'You win 6-4 and even share a high-five. Weird.'}, {p: .4, e: {dbl: 1, heat: 6, fame: 3}, t: 'You lose 6-3 and argue about who should have taken the lob.'}]], ['Say no thanks', {e: {dbl: 1, heat: 3}, t: 'The director pairs them with a celebrity chef instead.'}]]},
+      wk_lake: {t: 'Weekend off: the lake', sc: 'lake', w: () => 0, tx: 'A free weekend at last. Your friends rent a boat on Lake Michigan.',
+        o: [['Day on the water ⛵', {e: {en: 15, mood: 8, soc: 4}, t: 'Sun, snacks, zero tennis talk. Exactly what you needed.'}], ['Swim to the buoy', [{p: .7, e: {fit: 5, mood: 6}, t: 'You make it there and back. Lake legs.'}, {p: .3, e: {en: -5, mood: 2}, t: 'The lake is COLD. You turn back halfway.'}]], ['Nap on the deck', {e: {en: 20, mood: 4}, t: 'Best sleep in months.'}]]},
+      wk_bears: {t: 'Weekend off: Bears game', sc: 'sports', w: () => 0, tx: 'Your buddy has two tickets to the Bears game at Soldier Field.',
+        o: [['Tailgate all day \u{1F3C8}', {e: {mood: 10, soc: 8, en: -4}, t: 'Brats, cornhole and a very loud parking lot.'}], ['Game only, home by six', {e: {mood: 6, en: 3}, t: 'A win, a hot chocolate and an early night.'}], ['Try to get on the Jumbotron', [{p: .5, e: {fame: 4, mood: 6}, t: 'You’re on the big screen! Sixty thousand people cheer.'}, {p: .5, e: {mood: 3}, t: 'The camera picks the guy next to you.'}]]]},
+      wk_wed: {t: 'Weekend off: a friend’s wedding', sc: 'dance', w: () => 0, tx: 'Your college roommate is getting married, and you’re in the wedding party.',
+        o: [['Give a toast \u{1F942}', [{p: .7, e: {soc: 10, mood: 6}, t: 'Big laughs. One aunt cried.'}, {p: .3, e: {soc: 4, mood: -2}, t: 'You forget the groom’s middle name halfway through.'}]], ['Own the dance floor \u{1F483}', {e: {soc: 8, mood: 8, en: -6}, t: 'You teach the whole room a split-step.'}], ['Leave early to stretch', {e: {en: 6, fit: 3, soc: -3}, t: 'Responsible. A little boring.'}]]},
+      hc_parade: {t: 'Hometown parade', sc: 'cityparade', w: () => 0, tx: c => 'Chicago is throwing you a parade down Michigan Avenue after your ' + tnm(c.lastTitle) + ' title.',
+        o: [['Ride on the float \u{1F389}', {e: {fame: 6, mood: 8, en: -6}, t: 'Confetti, horns, and a dog in a tiny tennis visor.'}], ['Speech at Daley Plaza', [{p: .7, e: {fame: 8, rep: 5}, t: 'You end with “Go Cubs!” and the crowd loses it.'}, {p: .3, e: {fame: 4}, t: 'The mic cuts out. You wave a lot.'}]]]},
+      hc_pitch: {t: 'First pitch at Wrigley', sc: 'wrigley', w: () => 0, tx: c => 'After your ' + tnm(c.lastTitle) + ' title, the Cubs invite you to throw out the first pitch at Wrigley Field.',
+        o: [['Throw a strike', [{p: .55, e: {fame: 6, mood: 6}, t: 'Right down the middle. The bleachers chant your name.'}, {p: .45, e: {fame: 4, mood: 3}, t: 'It bounces three times. You blame the wind.'}]], ['Serve it in instead \u{1F3BE}', [{p: .5, e: {fame: 8}, t: 'You serve a tennis ball to the catcher. It goes viral.'}, {p: .5, e: {fame: 3, mood: 2}, t: 'It sails into the dugout. The manager keeps it.'}]]]},
+      hc_pizza: {t: 'A pizza named after you', sc: 'pizza', w: () => 0, tx: c => 'A deep-dish spot in Lakeview is naming a pizza after you: “The ' + meName() + '.” They want you to pick the toppings.',
+        o: [['Load it up \u{1F355}', {e: {earn: 5000, mood: 6, fame: 3}, t: 'Sausage, giardiniera, extra cheese. It sells out by Friday.'}], ['Make it a healthy one', {e: {earn: 1500, fit: 2, fame: 2}, t: 'Thin crust, lots of spinach. It does not sell out.'}], ['Donate the profits', {e: {fame: 5, rep: 6, mood: 4}, t: 'Every slice funds youth tennis in the neighborhood.'}]]},
+      famwin: {t: 'Family in the stands', sc: 'family', w: () => 0, tx: c => (relOf(c).s >= 1 ? (relOf(c).p || 'Your partner') + ' and your parents were' : 'Your parents were') + ' in your box for the ' + tnm(c.lastTitle) + ' final. After match point you climbed into the stands to hug them.',
+        o: [['Take them to dinner, my treat', {e: {earn: -400, mood: 12, soc: 6}, t: 'Your dad tells the waiter about every point. Twice.'}], ['Family photo with the trophy \u{1F4F8}', {e: {mood: 10, soc: 4}, t: 'It’s your new lock screen.'}], ['Fly them home first class', {e: {earn: -2500, mood: 8, soc: 8}, t: 'Your mom sends a picture of the warm nuts.'}]]},
+      lounge: {t: 'Rain-day hangout', sc: 'lounge', w: () => 0, tx: c => 'Remember the rain delay at ' + (c.lounge || {}).t + '? You spent two hours in the players’ lounge playing cards with ' + fullNm((c.lounge || {}).o) + '.',
+        o: [['Teach them Euchre \u{1F0CF}', {e: {pal: 1, soc: 8, mood: 5}, t: 'You’re tour friends now. They text you after every match.'}], ['Play for real money', [{p: .5, e: {pal: 1, earn: 1500}, t: 'You clean them out. They want a rematch.'}, {p: .5, e: {pal: 1, earn: -1500}, t: 'They clean you out. Card shark.'}]], ['Sneak a nap on the couch', {e: {en: 10}, t: 'You wake up to the rain stopping. Perfect timing.'}]]},
+      feed: {t: 'Scrolling your feed', sc: 'feed', w: c => mo(c) >= 1 ? 1.4 : 0, tx: feedTxt,
+        o: [['Like a few and keep scrolling', {e: {mood: 2}, t: 'Twenty minutes gone. Worth it.'}], ['Post a reply', [{p: .6, e: {fame: 4}, t: 'Your reply gets 40K likes.'}, {p: .4, e: {fame: 2, mood: -3}, t: 'You got ratioed. Delete, delete.'}]], ['Put the phone down', {e: {en: 5, mood: 2}, t: 'Touch grass. Literally: you go hit on grass.'}]]}
+    });
     function pickLife(c){ const ONCE = ['wax', 'farewell', 'reunion', 'cubsox', 'bobble', 'restaurant', 'tellall', 'firstword', 'parentshouse', 'inherit'], L = Object.keys(LIFE).map(k => [k, LIFE[k].w(c) || 0]).filter(x => x[1] > 0 && !(c.lifeUsed || []).includes(x[0]) && !(ONCE.includes(x[0]) && (c.once || {})[x[0]])), tot = L.reduce((a, x) => a + x[1], 0); if (!tot) return null;
       let r = Math.random()*tot; for (const [k, w] of L) { r -= w; if (r <= 0) { c.lifeUsed = (c.lifeUsed || []).concat(k).slice(-8); (c.once = c.once || {})[k] = 1; return {id: k}; } } return null; }
-    const lifeTxt = (c, s) => s.replace(/\{P\}/g, relOf(c).p || 'your partner').replace(/\{NATN\}/g, myNatName()).replace(/ ?\{FLAG\}/g, flg('you'));
+    const lifeTxt = (c, s) => (typeof s === 'function' ? s(c) : String(s || '')).replace(/\{P\}/g, relOf(c).p || 'your partner').replace(/\{NATN\}/g, myNatName()).replace(/ ?\{FLAG\}/g, flg('you'));
     let lastBill = 0, lastPct = 0;
     const billOf = n => Math.round(n*[1, 1.6, 2.5, 4][homeTier()]/100)*100; // bills grow with your lifestyle
     function applyLife(c, e){
@@ -2150,6 +2199,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (e.love && relOf(c).s) { const r = c.rel; r.h = Math.max(0, Math.min(100, LOVE(c) + e.love)); } if (e.relf && c.rel) c.rel[e.relf] = 1; if (e.prenup) c.prenup = 1; if (e.cat) c.cat = 1;
       if (e.bill) { lastBill = billOf(e.bill); c.earn = Math.max(0, (c.earn || 0) - lastBill); } if (e.homeUp) { const ht = homeTier(); if (ht < 3) { c.earn = Math.max(0, (c.earn || 0) - HOME_BUY[ht + 1]); c.home = ht + 1; } }
       if (e.kid) c.kids = (c.kids || 0) + 1;
+      if (e.heat) rivHeat(c, e.heat); if (e.frame) { c.frame = e.frame === 'none' ? null : e.frame; c.gearS = c.season; } if (e.cover) c.coverS = c.season; if (e.dbl) c.dblS = c.season;
+      if (e.kid2) { c.kidFan = {n: c.kidPend || 'Maya', m: mo(c)}; c.kidPend = null; } if (e.kidSeen && c.kidFan) c.kidFan.seen = 1;
+      if (e.pal && c.lounge && c.lounge.o) c.pals = (c.pals || []).filter(x => x !== c.lounge.o).concat(c.lounge.o).slice(-6);
       { const f = lifeNeeds(e); Object.keys(f).forEach(k => nbump(c, k, f[k])); }
       if (e.car) { carsFix(c); if (!c.cars.includes(e.car)) c.cars.push(e.car); c.myCar = e.car; (c.carEver = c.carEver || {})[e.car] = 1; bookAdd('car', 'New wheels: ' + (CARS[e.car] || [0, 'a car'])[1].toLowerCase(), {c2: e.car}); }
       if (e.dog || e.cat) { petsFix(c); const p = petOf(c, e.dog ? 'dog' : 'cat'); if (p) bookAdd('pet', 'Meet ' + p.n + ', our new ' + (e.dog ? 'dog' : 'cat'), {pk: e.dog ? 'dog' : 'cat'}); }
@@ -2157,7 +2209,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (e.kid) bookAdd('baby', c.kids > 1 ? 'Baby number ' + c.kids + ' arrived!' : 'Welcome to the world, little one'); if (e.homeUp) bookAdd('home', 'Moved into a ' + HOME[homeTier()][1].toLowerCase(), {h: homeTier()});
       persist();
     }
-    const fxTxt = e => !e ? '' : [e.form ? 'Form ' + (e.form > 0 ? '+' : '') + e.form : '', e.en ? 'Energy ' + (e.en > 0 ? '+' : '') + e.en : '', e.rep ? 'Crowd ' + (e.rep > 0 ? '+' : '') + e.rep : '', e.earn ? (e.earn > 0 ? '+' : '−') + money(Math.abs(e.earn), true) : '', e.earnPct ? (lastPct < 0 ? '−' : '+') + Math.round(Math.abs(lastPct)*100) + '% of your bank' : '', e.love ? '\u2764\uFE0F Love ' + (e.love > 0 ? '+' : '') + e.love : '', e.bill ? '−' + money(lastBill, true) : '', e.homeUp ? '\u{1F3E1} New home' : '', e.prenup ? 'Prenup signed' : '', e.xp ? '+' + e.xp + ' XP' : '', e.buff ? BUFF_TXT[e.buff] : '', e.attrAll ? 'All skills +' + e.attrAll : '', e.mental ? 'Mental +1' : '', e.jail ? 'Jail: ' + e.jail + ' month' : '', e.ban ? 'Banned: ' + e.ban + ' months' : '', e.inj ? 'Injured: ' + e.inj : '', e.item ? 'New gear' : '', e.jury ? 'Jury duty: 1 month' : '', e.car ? 'New ride' : '', e.farewell ? 'A farewell exhibition awaits' : '', e.dog ? 'New best friend \u{1F415}' : '', e.coachOff ? 'Coach gone' : '', e.elev === 'bond' ? 'A warmer handshake' : e.elev === 'awk' ? 'A frosty handshake' : '', needTxt(lifeNeeds(e))].filter(Boolean).join(' · ');
+    const fxTxt = e => !e ? '' : [e.form ? 'Form ' + (e.form > 0 ? '+' : '') + e.form : '', e.en ? 'Energy ' + (e.en > 0 ? '+' : '') + e.en : '', e.rep ? 'Crowd ' + (e.rep > 0 ? '+' : '') + e.rep : '', e.earn ? (e.earn > 0 ? '+' : '−') + money(Math.abs(e.earn), true) : '', e.earnPct ? (lastPct < 0 ? '−' : '+') + Math.round(Math.abs(lastPct)*100) + '% of your bank' : '', e.love ? '\u2764\uFE0F Love ' + (e.love > 0 ? '+' : '') + e.love : '', e.bill ? '−' + money(lastBill, true) : '', e.homeUp ? '\u{1F3E1} New home' : '', e.prenup ? 'Prenup signed' : '', e.xp ? '+' + e.xp + ' XP' : '', e.buff ? BUFF_TXT[e.buff] : '', e.attrAll ? 'All skills +' + e.attrAll : '', e.mental ? 'Mental +1' : '', e.heat ? 'Rivalry heat ' + (e.heat > 0 ? '+' : '') + e.heat : '', e.frame === 'power' ? 'Power frame: serve boost' : e.frame === 'control' ? 'Control frame: timing boost' : '', e.pal ? 'New tour friend' : '', e.jail ? 'Jail: ' + e.jail + ' month' : '', e.ban ? 'Banned: ' + e.ban + ' months' : '', e.inj ? 'Injured: ' + e.inj : '', e.item ? 'New gear' : '', e.jury ? 'Jury duty: 1 month' : '', e.car ? 'New ride' : '', e.farewell ? 'A farewell exhibition awaits' : '', e.dog ? 'New best friend \u{1F415}' : '', e.coachOff ? 'Coach gone' : '', e.elev === 'bond' ? 'A warmer handshake' : e.elev === 'awk' ? 'A frosty handshake' : '', needTxt(lifeNeeds(e))].filter(Boolean).join(' · ');
     let lifeT0 = 0, lifeSt = null;
     function showLife(step){
       const c = car_(), L = c.life && LIFE[c.life.id]; if (!L) { closePost(); openPick(true); return; }
@@ -2339,9 +2391,32 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const boothMatch = () => mode === 'career' && tourCtx && tourCtx.round >= roundsOf(tourCtx.t) - 2;
     function preMatch(next){
       if (reduce || !mode || mode !== 'career' || !tourCtx) { next(); return; }
-      const iv = () => bigMatch() ? startPress({pre: true, career: true, won: true}, next) : next();
-      if (boothMatch()) startBooth(iv); else iv();
+      const iv = () => bigMatch() ? startPress({pre: true, career: true, won: true}, next) : next(), go = () => { if (boothMatch()) startBooth(iv); else iv(); };
+      if (lockerDue()) showLockerRoom(go); else go();
     }
+    let lockNext = null, lockSeen = '', lockT0 = 0;
+    function lockerDue(){ try { const t = tourCtx.t, r = tourCtx.round, R = roundsOf(t); if (r < 0) return false; const big = t.lvl === 'GS' || t.lvl === '1000' || t.lvl === 'F';
+      if (!(r >= R - 2 || (big && r >= R - 3))) return false; const k = t.id + ':' + r + ':' + ((save.car || {}).season || 0); if (lockSeen === k) return false; lockSeen = k; return true; } catch(_) { return false; } }
+    function showLockerRoom(next){
+      const c = car_(), t = tourCtx.t, r = tourCtx.round, fin = r === roundsOf(t) - 1, R = rivOf(c), o = pro()[0], rp = relOf(c), L = [];
+      lockNext = next; lockT0 = performance.now()/1000;
+      L.push(fin ? 'Final day at ' + theN(t.name) + '. Your coach closes the locker room door behind you.' : rnName(t, r) + ' at ' + theN(t.name) + '. Your coach sits down next to you on the bench.');
+      if (R && R.id === o) L.push('Your rival ' + fullNm(R.id) + ' is warming up just down the hall. This one is personal.');
+      else if (R) L.push(fullNm(R.id) + ' walks past with headphones on and doesn’t look at you.');
+      else L.push(fullNm(o) + ' walks past and gives you a nod.');
+      L.push('A reporter catches you at the door: “Big one today. How are the nerves?”');
+      if (fin) L.push(rp.s >= 1 ? (rp.p || 'Your partner') + ' texts: “In your box with your parents. So proud of you. ❤️”' : 'Your mom texts: “We made it! Front row of your box. Don’t look at us, just win. ❤️”');
+      if ((c.pals || []).length) L.push('Your friend ' + fullNm(pickQ(c.pals)) + ' texts: “Go get it.”');
+      careerOverlay(pmHead('\u{1F6AA} Locker room', esc(t.short) + ' · ' + esc(rnName(t, r))) + '<canvas class="pc-cv life-cv" aria-hidden="true"></canvas><p class="ms-s">' + esc(L.join('\n')) + '</p>'
+        + '<p class="cd-h">Coach: “What do you need?”</p><div class="nx-row br-ch"><button type="button" data-cx="lk:focus">“Remind me of the game plan”</button><button type="button" data-cx="lk:fire">“Fire me up!”</button><button type="button" data-cx="lk:calm">“Just headphones. I’m locked in.”</button></div>');
+      const tok = post, loop = () => { const cvs = postEl.querySelector('.life-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, fin ? 'locker-fin' : 'locker', performance.now()/1000 - lockT0); } catch(_) {} decoRaf(loop); }; requestAnimationFrame(loop);
+    }
+    function lockerGo(k){
+      const can = !mBuff || mBuffFrame;
+      if (k === 'focus') { if (can) { mBuff = 'focus'; mBuffFrame = false; } toast('\u{1F4CB} Coach: “Serve wide, attack the second ball, stay patient.”'); }
+      else if (k === 'fire') { fire = Math.max(fire, 2); toast('\u{1F525} Coach: “This is YOUR court. Let’s go!”'); }
+      else { if (can) { mBuff = 'timing'; mBuffFrame = false; } toast('\u{1F3A7} Headphones on. Locked in.'); }
+      closePost(); const n = lockNext; lockNext = null; if (n) n(); }
     // ---- pre-match broadcast: stadium shot, the booth, tale of the tape, keys to the match ----
     const BOOTH = [['Jim Calloway', 'Play-by-play'], ['Renee Ostrowski', 'Analyst']];
     function boothKeys(O, T){
@@ -2594,6 +2669,30 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
         c.fillStyle = '#fff'; c.fillRect(cx + 4, 15, 6, 7); c.fillRect(cx + 5, 11, 4, 4); c.fillStyle = '#ff7ac6'; c.fillRect(cx + 4, 17.5, 6, .6); c.fillRect(cx + 5, 13, 4, .5); guy(cx - 22, me, 'hold'); guy(cx + 22, partnerPal, Math.floor(now*2) % 2 ? 'up' : 'hold'); txt('$$$', cx - 6, 10 + Math.sin(now*3), '#2f9e44', 3); }
       else if (k === 'house') { c.fillStyle = '#9fd3f0'; c.fillRect(0, 0, w, 40); c.fillStyle = '#5fae5f'; c.fillRect(0, 28, w, 12); c.fillStyle = '#e8dcc8'; c.fillRect(cx - 12, 14, 24, 14); c.fillStyle = '#9b3b2b'; c.beginPath(); c.moveTo(cx - 14, 14); c.lineTo(cx, 4); c.lineTo(cx + 14, 14); c.fill();
         c.fillStyle = '#6b4a2b'; c.fillRect(cx - 2, 20, 4, 8); c.fillStyle = '#cfe3ef'; c.fillRect(cx - 9, 17, 4, 4); c.fillRect(cx + 5, 17, 4, 4); c.fillStyle = '#fff'; c.fillRect(w - 16, 18, 9, 5); c.fillStyle = '#7a5a32'; c.fillRect(w - 12, 23, .8, 6); txt('SOLD', w - 11.5, 21.8, '#c8321e', 2.4); guy(12, me, Math.floor(now*2) % 2 ? 'up' : 'hold', 13); guy(22, partnerPal, Math.floor(now*2 + 1) % 2 ? 'up' : 'hold', 13); }
+      else if (k === 'locker') { room('#2b3946', '#4a4f55'); for (let x = 2; x < w - 14; x += 7) { c.fillStyle = '#3e6a86'; c.fillRect(x, 4, 6, 24); c.fillStyle = '#2c4d63'; c.fillRect(x + .6, 6, 4.8, .5); c.fillRect(x + .6, 7.2, 4.8, .5); c.fillStyle = '#c9d4dc'; c.fillRect(x + 4.6, 15, .6, 2); }
+        c.fillStyle = '#7a5a32'; c.fillRect(4, 25, w - 22, 1.6); c.fillRect(6, 26.6, 1, 4.4); c.fillRect(w - 20, 26.6, 1, 4.4);
+        c.fillStyle = '#1c2630'; c.fillRect(w - 12, 6, 10, 25); c.fillStyle = '#0d141a'; c.fillRect(w - 11, 7, 8, 24);
+        guy(cx - 9, me, 'hold', 13); npc(3, cx + 5, Math.floor(now*2.4) % 2 ? 'up' : 'hold');
+        const rx = ((now*7) % (w + 30)) - 15; if (t > 1.2) npc(5, w - rx, 'stand', 13);
+        if (t > 2.6) { npc(1, w - 7, 'hold', 13); c.fillStyle = '#555'; c.fillRect(w - 10.5, 18, 2.2, 1); c.fillStyle = '#111'; c.fillRect(w - 11, 17.2, 1.2, 1.6); }
+        if (sc === 'locker-fin') { c.fillStyle = '#ffd23f'; c.fillRect(cx + 14, 9, 4, 3); c.fillRect(cx + 15.5, 12, 1, 2); c.fillRect(cx + 14.5, 14, 3, .8); txt('❤️', cx - 9, 8 + Math.sin(now*3), '#fff', 3); } }
+      else if (k === 'drawc') { room('#14233a', '#2a2f38'); c.fillStyle = '#f4f4f0'; c.fillRect(cx - 18, 3, 36, 23); c.strokeStyle = '#1f2a44'; c.lineWidth = .3;
+        for (let i = 0; i < 8; i++) { const y = 5 + i*2.6, on = i <= Math.floor(now*2.5) % 9; c.fillStyle = on ? (i === 3 ? '#e8c35a' : '#9fb3c8') : '#e0e4e8'; c.fillRect(cx - 16, y, 7, 1.6); c.fillRect(cx + 9, y, 7, 1.6); }
+        c.beginPath(); for (let i = 0; i < 4; i++) { const y = 5.8 + i*5.2; c.moveTo(cx - 9, y); c.lineTo(cx - 6, y); c.lineTo(cx - 6, y + 2.6); c.lineTo(cx - 9, y + 2.6); c.moveTo(cx + 9, y); c.lineTo(cx + 6, y); c.lineTo(cx + 6, y + 2.6); c.lineTo(cx + 9, y + 2.6); } c.moveTo(cx - 6, 7); c.lineTo(cx - 3, 7); c.lineTo(cx - 3, 22); c.lineTo(cx - 6, 22); c.moveTo(cx + 6, 7); c.lineTo(cx + 3, 7); c.lineTo(cx + 3, 22); c.lineTo(cx + 6, 22); c.stroke();
+        c.fillStyle = '#e8c35a'; c.fillRect(cx - 1.4, 11, 2.8, 4); c.fillRect(cx - .5, 15, 1, 2); c.fillRect(cx - 1.4, 17, 2.8, .7);
+        guy(cx - 26, me, 'hold'); npc(2, cx + 25, Math.floor(now*1.5) % 2 ? 'up' : 'hold'); txt('DRAW', cx, 2.6, '#fff', 2); }
+      else if (k === 'lounge') { room('#3a2f2a', '#5a4a3a'); c.fillStyle = '#5e86a8'; c.fillRect(5, 5, 16, 13); c.fillStyle = '#9fc3dd'; for (let i = 0; i < 14; i++) c.fillRect(5 + (i*3.7) % 16, 5 + ((i*5.3 + now*9) % 13), .3, 1.4); c.strokeStyle = '#2a2a2a'; c.lineWidth = .5; c.strokeRect(5, 5, 16, 13);
+        c.fillStyle = '#2f6b45'; c.fillRect(cx - 9, 22, 18, 2.4); c.fillStyle = '#5a3a1e'; c.fillRect(cx - 1, 24.4, 2, 6.6);
+        for (let i = 0; i < 5; i++) { c.fillStyle = '#fff'; c.fillRect(cx - 6 + i*2.6, 21.2 - (i === Math.floor(now*2) % 5 ? .8 : 0), 1.8, 1.2); c.fillStyle = i % 2 ? '#c8102e' : '#111'; c.fillRect(cx - 5.6 + i*2.6, 21.5 - (i === Math.floor(now*2) % 5 ? .8 : 0), .5, .5); }
+        guy(cx - 14, me, 'hold'); npc(4, cx + 14, Math.floor(now*1.7) % 2 ? 'up' : 'hold'); }
+      else if (k === 'feed') { c.fillStyle = '#16202c'; c.fillRect(0, 0, w, 40); c.fillStyle = '#0b0b0b'; c.fillRect(cx - 9, 1.5, 18, 37); c.fillStyle = '#f2f4f7'; c.fillRect(cx - 8, 3.5, 16, 33);
+        c.save(); c.beginPath(); c.rect(cx - 8, 3.5, 16, 33); c.clip(); const off = (now*5) % 9;
+        for (let i = -1; i < 5; i++) { const y = 4 + i*9 - off; c.fillStyle = ['#4ea3ff', '#ff7ac6', '#3fbf7f', '#ffb35c', '#c86bfa'][(i + 10 + Math.floor(now*5/9)) % 5]; c.beginPath(); c.arc(cx - 5.6, y + 2, 1.4, 0, Math.PI*2); c.fill(); c.fillStyle = '#9aa4ad'; c.fillRect(cx - 3.4, y + 1, 10, .8); c.fillRect(cx - 3.4, y + 2.6, 7, .8); c.fillStyle = '#e6e9ee'; c.fillRect(cx - 7, y + 4.2, 14, 3); c.fillStyle = '#e5484d'; c.fillRect(cx + 5, y + 7.5, 1, .8); }
+        c.restore(); guy(cx - 20, me, 'hold'); }
+      else if (k === 'mail') { room('#3a4a5a', '#5a4a3a'); c.fillStyle = '#6b4a2b'; c.fillRect(cx - 14, 24, 28, 2); c.fillRect(cx - 13, 26, 1, 5); c.fillRect(cx + 12, 26, 1, 5);
+        for (let i = 0; i < 5; i++) { c.fillStyle = '#f4f1e8'; c.fillRect(cx + 2 + (i % 3)*3.4, 20 - Math.floor(i/3)*2.6 - i*.3, 4, 2.6); c.fillStyle = '#c8102e'; c.fillRect(cx + 4.8 + (i % 3)*3.4, 20.3 - Math.floor(i/3)*2.6 - i*.3, .8, .8); }
+        c.fillStyle = '#fffdf5'; c.fillRect(cx - 10, 12, 10, 11); c.fillStyle = '#ff7ac6'; c.fillRect(cx - 6, 14, 2, 2); c.fillStyle = '#4ea3ff'; c.fillRect(cx - 6.4, 16, 2.8, 3); c.fillStyle = '#3fbf7f'; c.fillRect(cx - 9, 21.2, 8, .6); c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(cx - 2.4, 14, .9 + Math.sin(now*3)*.15, 0, Math.PI*2); c.fill();
+        txt('♥', cx - 8, 15 + Math.sin(now*2)*.5, '#e5484d', 2.4); guy(cx - 20, me, 'hold'); }
       else { room('#2a3a44', '#3a4a50'); guy(cx, me, 'stand'); }
       if (sc === 'home-leak') { c.fillStyle = '#6ec6ff'; for (let i = 0; i < 4; i++) { const y = 1 + ((now*14 + i*7) % 27); c.fillRect(cx - 18 + i*9, y, .8, 1.4); } c.fillStyle = '#9aa4ad'; for (let i = 0; i < 4; i++) c.fillRect(cx - 19 + i*9, 29, 3, 2); }
       if (sc === 'airport-snow') { c.fillStyle = '#9fb3c4'; c.fillRect(4, 3, 26, 14); c.fillStyle = '#fff'; for (let i = 0; i < 24; i++) c.fillRect(4 + ((i*7.3 + Math.sin(now + i)*2 + 26) % 26), 3 + (i*3.1 + now*5) % 13.3, .7, .7); c.strokeStyle = '#555'; c.lineWidth = .5; c.strokeRect(4, 3, 26, 14); c.fillStyle = '#111'; c.fillRect(w*.7, 9, 14, 4); txt('DELAYED', w*.7 + 7, 12, '#ff5a5f', 2.2); }
@@ -2836,6 +2935,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     }
     const raining = () => cer && cer.kind === 'rain' && clock - cer.t0 > .6 && clock - cer.t0 < 7;
     function startRain(after){
+      try { if (mode === 'career' && tourCtx && save.car) { const P = realPros().filter(x => x[0] !== pro()[0]); if (P.length) save.car.rainAt = {t: tourCtx.t.short, o: pickQ(P)[0]}; } } catch(_) {}
       scene('rain', 9.4, () => { rainSound(false); after(); }, [
         {at: .4, fn: () => { call('Rain delay ☔', 'fault', 2200); rainSound(true); groan(1); }},
         {at: 2.4, fn: () => call('Covers on', 'in', 1500)},
@@ -3346,7 +3446,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       }
       if (thm) { drawProps(thm, g, true); if (thm.key) seasonProps(thm, g, true); }
       const jt0 = clock - crowdJump, ovt = clock - ovationT, ov = ovt >= 0 && ovt < 4.5, jt = ov ? ovt : jt0, cheering = ov || (jt0 >= 0 && jt0 < 1.1), waveX = mode !== 'practice' && shot && rally >= 7 ? ((clock*42) % (W + 40)) - 20 : null;
-      const opSide = mode !== 'practice' && (crowdSide() === 'op' || legendOpp()), signs = opSide || (mode !== 'practice' && (mode === 'career' ? ((save.car || {}).rep || 0) >= 40 : (save.wins || 0) >= 25)), SIGNS = opSide ? [opp().toUpperCase() + '!', 'WE \u2665 ' + opp().toUpperCase(), cryOf(pro()[0]).toUpperCase(), 'LEGEND', 'GO ' + opp().toUpperCase(), '#1 FAN'] : ['GO ' + meCap().split(' ')[0] + '!', 'WE \u2665 ' + meCap().split(' ')[0], '#1 FAN', 'ALLEZ!', 'VAMOS!', 'C\'MON!'];
+      const opSide = mode !== 'practice' && (crowdSide() === 'op' || legendOpp()), signs = opSide || (mode !== 'practice' && (mode === 'career' ? ((save.car || {}).rep || 0) >= 40 : (save.wins || 0) >= 25)), SIGNS = opSide ? [opp().toUpperCase() + '!', 'WE \u2665 ' + opp().toUpperCase(), cryOf(pro()[0]).toUpperCase(), 'LEGEND', 'GO ' + opp().toUpperCase(), '#1 FAN'] : (mode === 'career' && save.car && save.car.kidFan ? [save.car.kidFan.n.toUpperCase() + ' \u2665 ' + meCap().split(' ')[0]] : []).concat(['GO ' + meCap().split(' ')[0] + '!', 'WE \u2665 ' + meCap().split(' ')[0], '#1 FAN', 'ALLEZ!', 'VAMOS!', 'C\'MON!']);
       fans.forEach(p => {
         const wv = waveX == null ? 0 : Math.exp(-Math.pow((p.x - waveX)/5, 2)), j = (ov ? p.r*.9 + Math.abs(Math.sin(ovt*9 + p.ph))*p.r*.8 : cheering ? Math.abs(Math.sin(jt*13 + p.ph))*p.r*1.1*(1 - jt/1.1)*p.cheer : 0) + wv*p.r*1.8, r = p.r;
         const y = p.y - j + (running ? Math.sin(clock*1.2 + p.ph)*.18 : 0), d = Math.max(-1, Math.min(1, ((flip ? W - b.x : b.x) - p.x)/45));
@@ -3811,7 +3911,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     }
     function renderPress(){
       const n = pc.qs.length;
-      if (pc.i >= n) { const after = pc.after; pc.o.tones = pc.tones.slice(); closePress(); after(); return; }
+      if (pc.i >= n) { const after = pc.after; pc.o.tones = pc.tones.slice(); if (pc.o.career && !pc.o.preview && mode === 'career') pressAfter(pc.tones); closePress(); after(); return; }
       pcHd.innerHTML = '<span>\u{1F3A4} ' + (pc.o.pre ? 'Pre-match interview' : 'Press conference') + '</span><span>' + ('Question ' + (pc.i + 1) + ' of ' + n) + '</span>';
       const Q = pc.qs[pc.i], cols = Math.max(5, Math.floor((pcCv.clientWidth || 318)/(112/40)/9));
       if (!Q.fu) { let a; do { a = Math.floor(Math.random()*cols); } while (cols > 1 && a === pc.ask); pc.ask = a; }
@@ -3822,7 +3922,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     pressEl.addEventListener('click', e => {
       const b = e.target.closest('button'); if (!b || !pc) return; e.stopPropagation();
       if (soundOn) { ac(); unlockSpeech(); }
-      if (b.dataset.pc === 'go') { const after = pc.after; pc.o.tones = pc.tones.slice(); closePress(); after(); return; }
+      if (b.dataset.pc === 'go') { const after = pc.after; pc.o.tones = pc.tones.slice(); if (pc.o.career && !pc.o.preview && mode === 'career') pressAfter(pc.tones); closePress(); after(); return; }
       if (pc.busy) return; const Q = pc.qs[pc.i], a = Q.a[+b.dataset.pc]; if (!a) return;
       pc.busy = true; pc.tones.push(a.tone); if (a.tone === 2 && !pc.o.preview) { save.funny = (save.funny || 0) + 1; persist(); } pc.react = a.tone; pc.reactT = performance.now()/1000; b.classList.add('on');
       if (pc.o.career && !pc.o.preview && mode === 'career') repAdd(PC_REP[a.tone] || 0);
@@ -3836,6 +3936,12 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       }
       const tok = pc; setTimeout(() => { if (pc !== tok) return; pc.i++; pc.busy = false; renderPress(); }, 1600);
     });
+    function pressAfter(tones){ try { const c = car_(), n = [0, 0, 0, 0]; tones.forEach(x => n[x] = (n[x] || 0) + 1); const d = [0, 2, 3].sort((a, b) => n[b] - n[a] || (b === 3) - (a === 3))[0]; if (!n[d]) return;
+      c.pressTone = d; const R = rivOf(c), nmR = R ? nm(R.id) : '';
+      if (d === 0) { nbump(c, 'fame', 2); nbump(c, 'mood', 2); rivHeat(c, -5); toast('\u{1F4F0} Press recap: classy. Fame +2' + (R ? ' · ' + nmR + ' tipped their cap' : '')); }
+      else if (d === 2) { nbump(c, 'fame', 3); nbump(c, 'mood', 4); toast('\u{1F4F0} Press recap: funny. The clip is going around. Fame +3'); }
+      else { nbump(c, 'fame', 5); rivHeat(c, 8); toast('\u{1F4F0} Press recap: cocky. Fame +5' + (R ? ' · ' + nmR + ' saw it and is fuming' : '')); }
+      persist(); } catch(_) {} }
     function closePress(){ pressOpen = false; pc = null; stage.classList.remove('pressing'); pressEl.classList.remove('show'); pcBody.innerHTML = ''; }
     // ---- after the press conference: fan feed, prize check, live ranking; then stats and "next up" ----
     let postOpen = false, post = null, lastSig = '';
@@ -5049,6 +5155,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
           : row('\u{1F624}', 'No rival yet', 'Someone on tour will start talking soon'))
         + row('\u{1F91C}', 'Best friend · ' + esc(F.n), 'Your hitting partner from McFetridge<br>Bond ' + meter(F.b, '#ff7ac6'))
         + (A ? row('\u{1F4BC}', 'Agent · ' + esc(A.n), 'Takes 10% · bigger deals and better-paid shoots', '<button type="button" class="cr-lnk" data-cx="ag:fire">Part ways</button>') : row('\u{1F4BC}', 'No agent yet', agentDue(c) ? 'One wants to sign you. See This month.' : 'Agents call once people know your name'))
+        + ((c.pals || []).length ? '<p class="cr-pp">\u{1F91D} Tour friends: ' + c.pals.map(x => esc(nm(x))).join(', ') + '</p>' : '') + (c.frame ? '<p class="cr-pp">\u{1F3BE} Racquet: ' + (c.frame === 'power' ? 'power frame (serve boost)' : 'control frame (timing boost)') + '</p>' : '') + (c.kidFan ? '<p class="cr-pp">\u2709\uFE0F Biggest fan: ' + esc(c.kidFan.n) + ', age 9</p>' : '')
         + (c.rivPast && c.rivPast.length ? '<p class="cr-pp">Past rivals: ' + c.rivPast.map(x => esc(nm(x.id)) + (x.end === 'friends' ? ' (now friends)' : '')).join(', ') + '</p>' : '') + '</div>'; }
     // ---- the scrapbook: camera signatures, trophy lifts, your wedding, your first title ----
     const B64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_', SIG_INK = ['#3d7bff', '#22c55e', '#ff3b3b'];
@@ -5170,7 +5277,13 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       try { needsMonth(c, notes); } catch(_) {}
       try { makeNews(c, isFin ? 0 : Math.max(0, c.idx - 1), isFin); } catch(_) {}
       c.life = null; c.lifeQ = []; if (!c.over && !isFin) { const Q = []; if (!c.gearDeal && myRank() && myRank() <= 50) { c.gearDeal = 1; Q.push({id: 'gear'}); }
-        if (!c.jail && !c.ban) { const n = 2 + (Math.random() < .45 ? 1 : 0); for (let i = 0; i < 6 && Q.length < n; i++) { const L3 = pickLife(c); if (L3 && !Q.some(x => x.id === L3.id)) Q.push(L3); } }
+        if (!c.jail && !c.ban) {
+          const hl = (c.hist || []).slice(-1)[0];
+          if (hl && hl.season === c.season && !hl.fx) { hl.fx = 1;
+            if (hl.res === 3 && hl.tid !== 'rest') { c.lastTitle = hl.tid; Q.push({id: 'famwin'}); if (Math.random() < .5 && mo(c) - (c.hcAt == null ? -9 : c.hcAt) >= 3) { c.hcAt = mo(c); Q.push({id: pickQ(['hc_parade', 'hc_pitch', 'hc_pizza'])}); } }
+            if (hl.tid === 'rest') Q.push({id: pickQ(['wk_lake', 'wk_bears', 'wk_wed'])}); }
+          if (c.rainAt) { c.lounge = c.rainAt; c.rainAt = null; Q.push({id: 'lounge'}); }
+          const n = Math.min(4, Q.length + 2 + (Math.random() < .45 ? 1 : 0)); for (let i = 0; i < 8 && Q.length < n; i++) { const L3 = pickLife(c); if (L3 && !Q.some(x => x.id === L3.id)) Q.push(L3); } }
         c.life = Q.shift() || null; c.lifeQ = Q; }
       return qual;
     }
@@ -5244,7 +5357,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       const buff = c.buff; c.buff = null; persist();
       if (sess && bigOutdoor(t) && c.cur.round >= 0) venue = sess === 'night' ? 'night' : 'day';
       { const R0 = rivOf(c); grudgeNext = !!(R0 && R0.st === 2 && o === R0.id); }
-      pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); closePost(); newMatch(true); requestAnimationFrame(() => showTop(stage)); mBuff = buff; if (buff === 'fans') fire = 2; sessDay = sess === 'day'; if (sess === 'night') fire = Math.max(fire, 1);
+      pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); closePost(); newMatch(true); requestAnimationFrame(() => showTop(stage)); mBuff = buff || (c.frame === 'power' ? 'serve' : c.frame === 'control' ? 'timing' : null); mBuffFrame = !buff && !!mBuff; if (buff === 'fans') fire = 2; sessDay = sess === 'day'; if (sess === 'night') fire = Math.max(fire, 1);
       if (grudge || (fameOf(c) >= 75 && repOf(c) > -40 && Math.random() < .4)) fire = Math.max(fire, 1);
     }
     function careerRoundDone(won){
@@ -5924,11 +6037,18 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     const rkMove = (a, b) => !b ? '' : !a ? ' · new' : a > b ? ' ▲' + (a - b) : a < b ? ' ▼' + (b - a) : '';
     const endBtn = c => c.over ? (c.revDone !== c.season ? '<button type="button" class="pc-go" data-car="review">\u{1F4C5} Season review</button>' : '<button type="button" class="pc-go" data-car="awards">\u{1F3C6} Go to awards night</button>') : '<button type="button" class="pc-go" data-car="home">Back to career</button>';
     // ---- the draw ----
+    function drawCerem(c, t){ try { const b = c.cur && c.cur.b; if (!Array.isArray(b) || !b.includes('you')) return '';
+      const iy = b.indexOf('you'), R = rivOf(c), RR = roundsOf(t), meet = id => { const j = b.indexOf(id); if (j < 0) return -1; for (let k = 1; (1 << k) <= b.length; k++) if ((iy >> k) === (j >> k)) return k - 1; return -1; };
+      let line = '';
+      if (R && meet(R.id) >= 0) { const k = meet(R.id); line = k === 0 ? 'Uh oh. You drew your rival, ' + fullNm(R.id) + ', in the first round.' : k >= RR - 1 ? 'Your rival ' + fullNm(R.id) + ' is on the other side of the draw. You can only meet in the final.' : 'Uh oh: your rival ' + fullNm(R.id) + ' is in your ' + (k === RR - 2 ? 'half' : k === RR - 3 ? 'quarter' : 'section') + ' of the draw. You could meet in the ' + rnName(t, k).toLowerCase() + '.'; }
+      else { const top = b.find(id => id !== 'you' && seedOf(id) === 1); if (top) { const k = meet(top); line = k >= RR - 1 ? 'The top seed, ' + fullNm(top) + ', is on the other side. You can only meet in the final.' : k >= 0 ? 'The top seed, ' + fullNm(top) + ', is in your ' + (k === RR - 2 ? 'half' : k === RR - 3 ? 'quarter' : 'section') + ' of the draw. A ' + rnName(t, k).toLowerCase() + ' showdown is possible.' : ''; } }
+      return '<canvas class="pc-cv life-cv dc-cv" aria-hidden="true"></canvas><p class="ms-s">\u{1F3A4} At the draw ceremony in ' + esc(t.city || t.short) + ', a former champion pulls the names out of the trophy. ' + esc(line) + '</p>'; } catch(_) { return ''; } }
     function showDraw(fresh){
       const c = car_(), t = curT(c), o = careerOpp(), r = c.cur.round;
+      if (fresh) { const t0 = performance.now()/1000; requestAnimationFrame(() => { const tok = post, loop = () => { const cvs = postEl.querySelector('.dc-cv'); if (post !== tok || !cvs) return; try { drawLife(cvs, 'drawc', performance.now()/1000 - t0); } catch(_) {} decoRaf(loop); }; loop(); }); }
       careerOverlay(pmHead('\u{1F5C2}️ ' + esc(t.short) + (t.lvl === 'F' ? ' field' : ' draw'), fresh ? 'The draw is out' : LVL_NAME[t.lvl])
         + (fresh ? '<p class="ms-s">' + (r < 0 ? 'You need to win a qualifying match to get into the main draw.' : seedOf('you') ? 'You’re the No. ' + seedOf('you') + ' seed.' : t.lvl === 'F' ? 'Eight players, one trophy.' : 'You’re unseeded.' + (seedOf(o) ? ' First up: the No. ' + seedOf(o) + ' seed.' : '')) + '</p>' : '')
-        + drawViewHtml()
+        + (fresh ? drawCerem(c, t) : '') + drawViewHtml()
         + '<div class="nx-b">' + (bigOutdoor(t) && r >= 0 ? '<div class="nx-row cr-sess"><button type="button" class="pc-go" data-car="play" data-sess="night">\u{1F319} Night session</button><button type="button" class="pc-go" data-car="play" data-sess="day">\u2600\uFE0F Day session</button></div>' : '<button type="button" class="pc-go" data-car="play">Play the ' + esc(rnName(t, r).toLowerCase()) + ' vs ' + esc(nm(o)) + '</button>') + '<button type="button" class="pc-sec" data-car="back">Back</button></div>');
     }
     // ---- player level: one XP bar for every mode ----
@@ -6525,6 +6645,7 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
       if (a === 'rc') { recI += v === 'next' ? 1 : -1; showReview(recHalf); return; }
       if (a === 'midrc') { recI = 0; showReview(true); return; }
       if (a === 'lifego') { showLife(); return; } if (a === 'life') { lifeChoose(+v); return; } if (a === 'mg') { mgAct(v); return; }
+      if (a === 'lk') { lockerGo(v); return; }
       if (a === 'lifedone') { if (c.life) c.life.done = 1; lifeNext(c); persist(); closePost(); openPick(true); return; }
       if (a === 'lifeplay') { const fe = save.farewellEx; if (c.life) c.life.done = 1; persist(); if (!fe || !PROS.some(p => p[0] === fe.id)) { closePost(); openPick(true); return; } oppSel.value = fe.id; mode = 'exhibition'; save.mode = mode; tourCtx = null; persist(); pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); closePost(); newMatch(true); requestAnimationFrame(() => showTop(stage)); return; }
       if (a === 'docgo') { showDoctor(); return; }
