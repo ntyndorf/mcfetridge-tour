@@ -468,6 +468,19 @@ button.cr-tr{cursor:pointer}.cr-ti{font-size:17px;text-align:center}.cr-tt{displ
 .serve.fs .sv-stage.picking,.serve.fs .sv-stage.posting{flex:none}
 .serve.fs .sv-foot{flex:none}
 html.sv-fs-on,html.sv-fs-on body{overflow:hidden}
+/* landscape gameplay */
+html.sv-ls-on,html.sv-ls-on body{overflow:hidden;height:100%}
+.serve.ls{position:fixed;inset:0;z-index:300;margin:0;display:flex;flex-direction:column;background:#063f49;padding:6px max(8px,env(safe-area-inset-right,0px)) max(6px,env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
+.serve.ls .sv-stage{flex:1 1 auto;height:auto;min-height:0}
+.serve.ls .sv-btn{height:52px;left:118px;border-radius:10px}
+.serve.ls .sv-btn .sv-btxt{font-size:15px}.serve.ls .sv-btn .sv-bsub{display:none}
+.serve.ls .sv-foot{position:absolute;left:max(8px,env(safe-area-inset-left,0px));bottom:max(6px,env(safe-area-inset-bottom,0px));margin:0;z-index:4;flex-wrap:nowrap;width:110px;height:52px;align-content:center}
+.serve.ls .sv-foot>*:not(.sv-chg){display:none}
+.serve.ls .sv-foot .sv-chg{width:100%;justify-content:center;height:52px;box-sizing:border-box;border-radius:10px}
+.sv-lstip{order:9;display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:99px;border:1px dashed rgba(223,255,79,.55);background:rgba(223,255,79,.08);color:#e9f7c2;font:600 12px var(--body);cursor:pointer}
+.sv-lstip span{font-size:14px}
+@media (orientation: landscape){.sv-lstip{display:none}}
+.serve.collapsed .sv-lstip,.serve.ls .sv-lstip{display:none}
 .sv-stage .home-cv{height:96px}
 .ph{display:grid;gap:5px;padding:8px;border-radius:16px;background:#111a1e;border:2px solid #2b3a40;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
 .ph-h{display:flex;justify-content:space-between;align-items:baseline;padding:0 3px 2px}.ph-h b{font:700 15px var(--display);letter-spacing:.06em;color:#fff;text-transform:uppercase}.ph-h span{font:600 11px var(--body);color:#8fb8bd}
@@ -817,9 +830,9 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
 .sa-build{font:12px/1.4 var(--mono);color:#8fb8bd;text-align:center;margin:6px 8px 0}.sa-build b{color:#dfff4f}.sa-build button{font:600 12px var(--body);margin-left:6px;padding:4px 10px;border-radius:99px;border:1px solid rgba(255,255,255,.3);background:transparent;color:#cfe3e6;cursor:pointer}
 .sa-note{font:12px/1.4 var(--body);color:#8fb8bd;text-align:center;margin:12px 8px 0}
 </style></head>
-<body data-build="14"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
+<body data-build="15"><div class="sa-wrap"><header class="board sa-board"><div class="sa-top"><h1>McFetridge <span>Tour 2k26</span></h1><a href="https://ntyndorf.github.io/mcfetridge-singles/">League ›</a></div><div id="serve-slot"></div></header>
 <p class="sa-note">Your progress saves on this device. Add this page to your Home Screen to play like an app.</p>
-<p class="sa-build">Build <b>14</b> · Oct 23, 2026, 11:27 AM CT<button type="button" id="sa-chk">Check for update</button></p></div>
+<p class="sa-build">Build <b>15</b> · Oct 23, 2026, 9:30 PM CT<button type="button" id="sa-chk">Check for update</button></p></div>
 <script>
 (function(){
   'use strict';
@@ -1221,8 +1234,8 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     window.addEventListener('resize', () => { szDirty = true; }); try { window.addEventListener('orientationchange', () => { szDirty = true; }); } catch(_) {}
     function resize(){
       if (!szDirty && CW && cv.width && (window.devicePixelRatio || 1) === dprRaw) return; szDirty = false;
-      const fs = el.classList.contains('fs'), w = cv.clientWidth || 300; dprRaw = window.devicePixelRatio || 1; const d = Math.min(dprRaw, SLOW ? 2 : 4); stageW = stage.clientWidth;
-      let k = 1.6; if (fs) { const avail = Math.max(118, stage.clientHeight - 40 - 118); k = Math.max(1.6, Math.min(avail/H, w/170)); }
+      const ls = el.classList.contains('ls'), fs = ls || el.classList.contains('fs'), w = cv.clientWidth || 300; dprRaw = window.devicePixelRatio || 1; const d = Math.min(dprRaw, SLOW ? 2 : 4); stageW = stage.clientWidth;
+      let k = 1.6; if (fs) { const avail = Math.max(ls ? 80 : 118, stage.clientHeight - 40 - (ls ? 58 : 118)); k = Math.max(ls ? 1 : 1.6, Math.min(avail/H, w/170)); }
       if (w === CW && d === dpr && k === K && cv.width) return;
       K = k; CW = w; W = w / K; dpr = d; cv.style.height = fs ? Math.round(H*K) + 'px' : ''; arenaEl.style.height = fs ? Math.round(40 + H*K + 2) + 'px' : '';
       cv.width = Math.round(w*dpr); cv.height = Math.round(H*K*dpr); fansW = -1;
@@ -6882,6 +6895,19 @@ body{margin:0;min-height:100vh;padding:env(safe-area-inset-top) 0 env(safe-area-
     function ask(q, fn){ askFn = fn; askEl.innerHTML = '<span>' + q + '</span><button type="button" data-ask="1">Yes</button><button type="button" data-ask="0" class="calm">Cancel</button>'; askEl.hidden = false; }
     askEl.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; e.stopPropagation(); askEl.hidden = true; const f = askFn; askFn = null; if (b.dataset.ask === '1' && f) f(); });
     el.querySelector('.sv-cab').addEventListener('click', () => { if (pickOpen) { pickOpen = false; pickEl.classList.remove('show'); stage.classList.remove('picking'); showCabinet(true); return; } if (postOpen || signOpen || pressOpen) return; if (shot || review) { call('Finish the point first', 'in', 1300); return; } if (cer && !(cer.kind === 'toss' && !cer.choice)) { call('One sec\u2026', 'in', 1000); return; } showCabinet(); });
+    const lsMQ = (() => { try { return matchMedia('(orientation: landscape) and (max-height: 540px) and (pointer: coarse)'); } catch(_) { return null; } })();
+    const lsWant = () => !!(lsMQ && lsMQ.matches) && !pickOpen && !postOpen && !signOpen && !pressOpen && !el.classList.contains('collapsed')
+      && !['picking', 'posting', 'pressing'].some(k2 => stage.classList.contains(k2));
+    function lsCheck(){ const on = lsWant(); if (on === el.classList.contains('ls')) return;
+      el.classList.toggle('ls', on); document.documentElement.classList.toggle('sv-ls-on', on);
+      if (on) { try { window.scrollTo(0, 0); } catch(_) {} try { localStorage.setItem('mws-ls-seen', '1'); } catch(_) {} if (typeof lsTip !== 'undefined' && lsTip.isConnected) lsTip.remove(); }
+      CW = 0; szDirty = true; setTimeout(() => { resize(); draw(); }, 30); }
+    try { lsMQ && lsMQ.addEventListener('change', lsCheck); } catch(_) {}
+    window.addEventListener('resize', lsCheck); setInterval(lsCheck, 400);
+    // portrait nudge on phones: shown during matches until they've tried it once
+    const lsTip = document.createElement('button'); lsTip.type = 'button'; lsTip.className = 'sv-lstip'; lsTip.innerHTML = '<span aria-hidden="true">↻</span> Turn your phone for wide view';
+    lsTip.addEventListener('click', e => { e.stopPropagation(); try { localStorage.setItem('mws-ls-seen', '1'); } catch(_) {} lsTip.remove(); });
+    try { if (matchMedia('(pointer: coarse)').matches && localStorage.getItem('mws-ls-seen') !== '1') el.querySelector('.sv-foot').appendChild(lsTip); } catch(_) {}
     const fsBtn = el.querySelector('.sv-fs');
     function setFs(on){
       el.classList.toggle('fs', on); document.documentElement.classList.toggle('sv-fs-on', on); fsBtn.textContent = on ? '✕ Exit full screen' : '⛶ Full screen';
